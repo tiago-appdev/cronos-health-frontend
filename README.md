@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cronos Health — Frontend
 
-## Getting Started
+Este es el frontend del sistema de gestión de turnos médicos **Cronos Health**, desarrollado con **Next.js**, **TypeScript**, **TailwindCSS** y **Shadcn UI**.
 
-First, run the development server:
+## 🚀 Tecnologías Utilizadas
+
+- [Next.js](https://nextjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Shadcn UI](https://ui.shadcn.com/)
+
+## 📦 Instalación
+
+```bash
+# Entrar a la carpeta
+cd frontend
+
+# Instalar dependencias
+npm install
+```
+
+> Si usás `pnpm`, también es compatible.
+
+## 🧪 Desarrollo
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre el navegador en [http://localhost:3000](http://localhost:3000) para ver la app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🗂️ Estructura
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/              # App Router de Next.js
+├── components/       # Componentes reutilizables
+├── lib/              # Funciones auxiliares
+└── utils/            # Helpers y constantes
+```
 
-## Learn More
+## 🧩 Shadcn UI
 
-To learn more about Next.js, take a look at the following resources:
+Este proyecto utiliza **Shadcn UI** para construir componentes accesibles y modernos. Podés agregar un nuevo componente, por ejemplo:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npx shadcn-ui@latest add button
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔌 Comunicación con Backend
 
-## Deploy on Vercel
+Las llamadas a la API se realizarán mediante `Axios`. El endpoint base se puede configurar en una variable de entorno:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+NEXT_PUBLIC_API_URL=http://localhost:4000/api
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## ✅ Tareas pendientes
+
+- [ ] Página de inicio
+- [ ] Registro/Login de usuarios
+- [ ] Panel del paciente
+- [ ] Reserva y cancelación de turnos
+- [ ] Chat interno (próximamente)
+- [ ] Encuestas y métricas
+
+## 👥 Equipo
+
+- Desarrolladores: Amarfil Carolina, Ibarrola Tiago, Ozuna Maria, Pereyra Maximiliano y Skidelski Dario.
