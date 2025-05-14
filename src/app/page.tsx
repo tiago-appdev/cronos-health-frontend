@@ -1,102 +1,142 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const caracteristicas = [
+    {
+      title: "Calendario Inteligente",
+      description:
+        "Sistema que prioriza la urgencia médica y optimiza los horarios de atención.",
+    },
+    {
+      title: "Recordatorios Automáticos",
+      description:
+        "Notificaciones por correo o WhatsApp para reducir ausencias y mejorar la puntualidad.",
+    },
+    {
+      title: "Historial Clínico",
+      description:
+        "Acceso seguro al historial de cada paciente para un seguimiento personalizado.",
+    },
+  ];
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  return (
+    <div className="flex min-h-screen flex-col">
+      <header className="bg-white border-b">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-teal-600"
+            >
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+            <span className="text-xl font-bold text-teal-600">
+              Cronos Health
+            </span>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Link href="/login">
+              <Button variant="outline">Iniciar Sesión</Button>
+            </Link>
+            <Link href="/register">
+              <Button>Registrarse</Button>
+            </Link>
+          </div>
         </div>
+      </header>
+      <main className="flex-1 bg-gray-50">
+        <section className="py-12 md:py-24">
+          <div className="container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+                Gestión de Turnos Médicos Simplificada
+              </h1>
+              <p className="text-xl text-gray-600 mb-8">
+                Cronos Health transforma la manera en que clínicas y
+                consultorios organizan y optimizan la atención médica.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="/register">
+                  <Button size="lg" className="w-full sm:w-auto">
+                    Comenzar Ahora
+                  </Button>
+                </Link>
+                <Link href="#features">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
+                    Conocer Más
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            <div className="flex justify-center items-center">
+              <img
+                src="/placeholder.svg"
+                alt="Cronos Health Platform"
+                className="rounded-lg shadow-lg"
+                width={500}
+                height={400}
+              />
+            </div>
+          </div>
+        </section>
+        <section id="features" className="py-12 bg-white">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center mb-12">
+              Características Principales
+            </h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              {caracteristicas.map((feature, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <CardTitle className="font-bold">{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p>{feature.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      <footer className="bg-gray-900 text-white py-8">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <span className="text-xl font-bold text-teal-400">
+                Cronos Health
+              </span>
+              <p className="mt-2 text-gray-400">
+                © 2025 Cronos Health. Todos los derechos reservados.
+              </p>
+            </div>
+            <div className="flex space-x-6">
+              <Link href="/terms" className="text-gray-400 hover:text-white">
+                Términos
+              </Link>
+              <Link href="/privacy" className="text-gray-400 hover:text-white">
+                Privacidad
+              </Link>
+              <Link href="/contact" className="text-gray-400 hover:text-white">
+                Contacto
+              </Link>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
