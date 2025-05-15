@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
+import { ToastProvider } from "@/components/ui/toast-context";
 
 export const metadata: Metadata = {
   title: "Cronos Health",
@@ -14,12 +15,16 @@ const roboto = Roboto({
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="es" className={roboto.className}>
-      <body>{children}</body>
+      <body>
+        <ToastProvider>
+          {children}
+        </ToastProvider>
+      </body>
     </html>
   );
 }
