@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -17,20 +16,96 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast-context";
 
 export default function RegisterPage() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    userType: "patient",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  const handleRadioChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      userType: value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate registration
-    setTimeout(() => {
+    // Check if passwords match
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Error de registro",
+        description: "Las contraseñas no coinciden",
+        type: "error",
+      });
       setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:4000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          name: formData.name, 
+          email: formData.email, 
+          password: formData.password,
+          userType: formData.userType 
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        toast({
+          title: "Error de registro",
+          description: data.message || "No se pudo completar el registro",
+          type: "error",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Store token in localStorage
+      localStorage.setItem("token", data.token);
+      
+      toast({
+        title: "Registro exitoso",
+        description: "Bienvenido a Cronos Health",
+        type: "success",
+      });
+      
+      // Redirect to dashboard
       router.push("/dashboard");
-    }, 1000);
+    } catch (error) {
+      console.error("Error during registration:", error);
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al intentar registrarse",
+        type: "error",
+      });
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -67,7 +142,14 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nombre Completo</Label>
-              <Input id="name" type="text" placeholder="Juan Pérez" required />
+              <Input 
+                id="name" 
+                type="text" 
+                placeholder="Juan Pérez" 
+                value={formData.name}
+                onChange={handleChange}
+                required 
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Correo Electrónico</Label>
@@ -75,21 +157,36 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 placeholder="correo@ejemplo.com"
+                value={formData.email}
+                onChange={handleChange}
                 required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
-              <Input id="password" type="password" required />
+              <Input 
+                id="password" 
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                required 
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
-              <Input id="confirm-password" type="password" required />
+              <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+              <Input 
+                id="confirmPassword" 
+                type="password" 
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required 
+              />
             </div>
             <div className="space-y-2">
               <Label>Tipo de Usuario</Label>
               <RadioGroup
-                defaultValue="patient"
+                value={formData.userType}
+                onValueChange={handleRadioChange}
                 className="flex flex-col space-y-2"
               >
                 <div className="flex items-center space-x-2">

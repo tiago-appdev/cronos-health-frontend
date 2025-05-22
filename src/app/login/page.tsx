@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -16,22 +15,60 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast-context";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate login
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await fetch("http://localhost:4000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        toast({
+          title: "Error de inicio de sesión",
+          description: data.message || "Credenciales inválidas",
+          type: "error",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Store token in localStorage
+      localStorage.setItem("token", data.token);
+      
+      toast({
+        title: "Inicio de sesión exitoso",
+        description: "Bienvenido a Cronos Health",
+        type: "success",
+      });
+      
+      // Redirect to dashboard
       router.push("/dashboard");
-    }, 1000);
+    } catch (error) {
+      console.error("Error during login:", error);
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al intentar iniciar sesión",
+        type: "error",
+      });
+      setIsLoading(false);
+    }
   };
 
   return (
