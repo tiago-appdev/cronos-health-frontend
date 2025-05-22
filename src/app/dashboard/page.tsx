@@ -1,19 +1,34 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar } from "@/components/ui/calendar"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { CalendarIcon, Clock, User, FileText, MessageSquare, Bell, Settings, LogOut } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar } from "@/components/ui/calendar";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  CalendarIcon,
+  Clock,
+  User,
+  FileText,
+  MessageSquare,
+  Bell,
+  Settings,
+  LogOut,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
-  const [date, setDate] = useState<Date | undefined>(new Date())
-  const router = useRouter()
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const router = useRouter();
 
   // Mock appointments data
   const appointments = [
@@ -33,7 +48,7 @@ export default function DashboardPage() {
       time: "15:30",
       status: "pending",
     },
-  ]
+  ];
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -55,13 +70,18 @@ export default function DashboardPage() {
             >
               <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
             </svg>
-            <span className="text-xl font-bold text-teal-600">Cronos Health</span>
+            <span className="text-xl font-bold text-teal-600">
+              Cronos Health
+            </span>
           </Link>
         </div>
         <div className="flex flex-col flex-1 overflow-y-auto">
           <div className="flex items-center p-4 border-b">
             <Avatar className="h-10 w-10 mr-3">
-              <AvatarImage src="/placeholder.svg?height=40&width=40" alt="Avatar" />
+              <AvatarImage
+                src="/placeholder.svg?height=40&width=40"
+                alt="Avatar"
+              />
               <AvatarFallback>JP</AvatarFallback>
             </Avatar>
             <div>
@@ -70,7 +90,10 @@ export default function DashboardPage() {
             </div>
           </div>
           <nav className="flex-1 p-4 space-y-1">
-            <Link href="/dashboard" className="flex items-center p-2 rounded-md bg-gray-100 text-teal-600 font-medium">
+            <Link
+              href="/dashboard"
+              className="flex items-center p-2 rounded-md bg-gray-100 text-teal-600 font-medium"
+            >
               <CalendarIcon className="mr-3 h-5 w-5" />
               Mis Turnos
             </Link>
@@ -88,7 +111,10 @@ export default function DashboardPage() {
               <FileText className="mr-3 h-5 w-5" />
               Historial Médico
             </Link>
-            <Link href="/dashboard/chat" className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100">
+            <Link
+              href="/dashboard/chat"
+              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
+            >
               <MessageSquare className="mr-3 h-5 w-5" />
               Chat
             </Link>
@@ -136,24 +162,41 @@ export default function DashboardPage() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle>Próximos Turnos</CardTitle>
-                    <CardDescription>Tus citas médicas programadas</CardDescription>
+                    <CardDescription>
+                      Tus citas médicas programadas
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {appointments.length > 0 ? (
                       <div className="space-y-4">
                         {appointments.map((appointment) => (
-                          <div key={appointment.id} className="flex items-start p-3 border rounded-lg">
+                          <div
+                            key={appointment.id}
+                            className="flex items-start p-3 border rounded-lg"
+                          >
                             <div className="mr-4 mt-1">
                               <CalendarIcon className="h-10 w-10 text-teal-600" />
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center justify-between mb-1">
-                                <h3 className="font-medium">{appointment.doctor}</h3>
-                                <Badge variant={appointment.status === "confirmed" ? "default" : "outline"}>
-                                  {appointment.status === "confirmed" ? "Confirmado" : "Pendiente"}
+                                <h3 className="font-medium">
+                                  {appointment.doctor}
+                                </h3>
+                                <Badge
+                                  variant={
+                                    appointment.status === "confirmed"
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                >
+                                  {appointment.status === "confirmed"
+                                    ? "Confirmado"
+                                    : "Pendiente"}
                                 </Badge>
                               </div>
-                              <p className="text-sm text-gray-500">{appointment.specialty}</p>
+                              <p className="text-sm text-gray-500">
+                                {appointment.specialty}
+                              </p>
                               <div className="flex items-center mt-2 text-sm text-gray-600">
                                 <CalendarIcon className="h-4 w-4 mr-1" />
                                 <span>{appointment.date}</span>
@@ -174,7 +217,9 @@ export default function DashboardPage() {
                       </div>
                     ) : (
                       <div className="text-center py-6">
-                        <p className="text-gray-500">No tienes turnos programados</p>
+                        <p className="text-gray-500">
+                          No tienes turnos programados
+                        </p>
                         <Button className="mt-2" variant="outline">
                           Agendar Turno
                         </Button>
@@ -185,10 +230,17 @@ export default function DashboardPage() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle>Calendario</CardTitle>
-                    <CardDescription>Vista mensual de tus citas</CardDescription>
+                    <CardDescription>
+                      Vista mensual de tus citas
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" /git push -u origin feature/login-usuarios>
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      className="rounded-md border"
+                    />
                   </CardContent>
                 </Card>
               </div>
@@ -197,12 +249,16 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Agendar Nuevo Turno</CardTitle>
-                  <CardDescription>Selecciona especialidad, médico y horario disponible</CardDescription>
+                  <CardDescription>
+                    Selecciona especialidad, médico y horario disponible
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {/* Appointment scheduling form would go here */}
-                    <p className="text-center py-6 text-gray-500">Formulario de agendamiento de turnos</p>
+                    <p className="text-center py-6 text-gray-500">
+                      Formulario de agendamiento de turnos
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -211,5 +267,5 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
-  )
+  );
 }
