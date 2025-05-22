@@ -66,16 +66,16 @@ export default function RegisterPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          name: formData.name, 
-          email: formData.email, 
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
           password: formData.password,
-          userType: formData.userType 
+          userType: formData.userType,
         }),
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         toast({
           title: "Error de registro",
@@ -88,13 +88,14 @@ export default function RegisterPage() {
 
       // Store token in localStorage
       localStorage.setItem("token", data.token);
-      
+      document.cookie = `token=${data.token}; path=/; max-age=3600;`;
+
       toast({
         title: "Registro exitoso",
         description: "Bienvenido a Cronos Health",
         type: "success",
       });
-      
+
       // Redirect to dashboard
       router.push("/dashboard");
     } catch (error) {
@@ -142,13 +143,13 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nombre Completo</Label>
-              <Input 
-                id="name" 
-                type="text" 
-                placeholder="Juan Pérez" 
+              <Input
+                id="name"
+                type="text"
+                placeholder="Juan Pérez"
                 value={formData.name}
                 onChange={handleChange}
-                required 
+                required
               />
             </div>
             <div className="space-y-2">
@@ -164,22 +165,22 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
-              <Input 
-                id="password" 
+              <Input
+                id="password"
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                required 
+                required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-              <Input 
-                id="confirmPassword" 
-                type="password" 
+              <Input
+                id="confirmPassword"
+                type="password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                required 
+                required
               />
             </div>
             <div className="space-y-2">

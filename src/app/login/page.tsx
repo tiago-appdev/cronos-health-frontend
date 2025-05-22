@@ -38,7 +38,7 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         toast({
           title: "Error de inicio de sesión",
@@ -51,13 +51,14 @@ export default function LoginPage() {
 
       // Store token in localStorage
       localStorage.setItem("token", data.token);
-      
+      document.cookie = `token=${data.token}; path=/; max-age=3600;`;
+
       toast({
         title: "Inicio de sesión exitoso",
         description: "Bienvenido a Cronos Health",
         type: "success",
       });
-      
+
       // Redirect to dashboard
       router.push("/dashboard");
     } catch (error) {

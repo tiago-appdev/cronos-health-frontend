@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -137,7 +137,12 @@ export default function DashboardPage() {
             <Button
               variant="ghost"
               className="w-full justify-start text-gray-600"
-              onClick={() => router.push("/login")}
+              onClick={() => {
+                document.cookie =
+                  "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                localStorage.removeItem("token");
+                router.push("/login");
+              }}
             >
               <LogOut className="mr-3 h-5 w-5" />
               Cerrar Sesión
