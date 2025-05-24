@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,31 +24,88 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
+import { ProtectedRoute } from "@/components/protected-route";
 
-export default function DashboardPage() {
+interface Appointment {
+  id: number;
+  doctor: string;
+  specialty: string;
+  date: string;
+  time: string;
+  status: string;
+}
+
+function DashboardContent() {
+  const { user, logout } = useAuth();
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const router = useRouter();
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock appointments data
-  const appointments = [
-    {
-      id: 1,
-      doctor: "Dra. María González",
-      specialty: "Cardiología",
-      date: "2025-04-15",
-      time: "10:00",
-      status: "confirmed",
-    },
-    {
-      id: 2,
-      doctor: "Dr. Carlos Rodríguez",
-      specialty: "Dermatología",
-      date: "2025-04-20",
-      time: "15:30",
-      status: "pending",
-    },
-  ];
+  // Get user initials for avatar
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Format user type for display
+  const getUserTypeDisplay = (userType: string) => {
+    return userType === 'patient' ? 'Paciente' : 'Médico';
+  };
+
+  // Fetch user's appointments
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        // For now, we'll use mock data since we don't have the appointments endpoint yet
+        // In a real app, you'd fetch from your API like this:
+        // const response = await fetch('http://localhost:4000/api/appointments', {
+        //   headers: { 'x-auth-token': token }
+        // });
+        // const data = await response.json();
+        // setAppointments(data);
+
+        // Mock data for demonstration
+        const mockAppointments: Appointment[] = [
+          {
+            id: 1,
+            doctor: "Dra. María González",
+            specialty: "Cardiología",
+            date: "2025-05-25",
+            time: "10:00",
+            status: "confirmed",
+          },
+          {
+            id: 2,
+            doctor: "Dr. Carlos Rodríguez",
+            specialty: "Dermatología",
+            date: "2025-05-28",
+            time: "15:30",
+            status: "pending",
+          },
+        ];
+        
+        setAppointments(mockAppointments);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching appointments:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
+
+  if (!user) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -82,11 +139,13 @@ export default function DashboardPage() {
                 src="/placeholder.svg?height=40&width=40"
                 alt="Avatar"
               />
-              <AvatarFallback>JP</AvatarFallback>
+              <AvatarFallback className="bg-teal-100 text-teal-700">
+                {getInitials(user.name)}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-medium">Juan Pérez</p>
-              <p className="text-sm text-gray-500">Paciente</p>
+              <p className="font-medium">{user.name}</p>
+              <p className="text-sm text-gray-500">{getUserTypeDisplay(user.user_type)}</p>
             </div>
           </div>
           <nav className="flex-1 p-4 space-y-1">
@@ -95,7 +154,7 @@ export default function DashboardPage() {
               className="flex items-center p-2 rounded-md bg-gray-100 text-teal-600 font-medium"
             >
               <CalendarIcon className="mr-3 h-5 w-5" />
-              Mis Turnos
+              {user.user_type === 'patient' ? 'Mis Turnos' : 'Mis Citas'}
             </Link>
             <Link
               href="/dashboard/profile"
@@ -109,7 +168,7 @@ export default function DashboardPage() {
               className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
             >
               <FileText className="mr-3 h-5 w-5" />
-              Historial Médico
+              {user.user_type === 'patient' ? 'Historial Médico' : 'Historial de Pacientes'}
             </Link>
             <Link
               href="/dashboard/chat"
@@ -137,7 +196,7 @@ export default function DashboardPage() {
             <Button
               variant="ghost"
               className="w-full justify-start text-gray-600"
-              onClick={() => router.push("/login")}
+              onClick={logout}
             >
               <LogOut className="mr-3 h-5 w-5" />
               Cerrar Sesión
@@ -149,25 +208,50 @@ export default function DashboardPage() {
       {/* Main content */}
       <div className="flex-1 md:ml-64">
         <header className="sticky top-0 z-10 bg-white border-b h-16 flex items-center px-4 md:px-6">
-          <h1 className="text-xl font-semibold">Panel del Paciente</h1>
+          <h1 className="text-xl font-semibold">
+            Panel del {getUserTypeDisplay(user.user_type)}
+          </h1>
         </header>
         <main className="p-4 md:p-6">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Bienvenido, {user.name}
+            </h2>
+            <p className="text-gray-600">
+              Aquí puedes gestionar tus {user.user_type === 'patient' ? 'turnos y consultas médicas' : 'citas con pacientes'}.
+            </p>
+          </div>
+
           <Tabs defaultValue="appointments">
             <TabsList className="mb-4">
-              <TabsTrigger value="appointments">Mis Turnos</TabsTrigger>
-              <TabsTrigger value="schedule">Agendar Turno</TabsTrigger>
+              <TabsTrigger value="appointments">
+                {user.user_type === 'patient' ? 'Mis Turnos' : 'Mis Citas'}
+              </TabsTrigger>
+              <TabsTrigger value="schedule">
+                {user.user_type === 'patient' ? 'Agendar Turno' : 'Programar Cita'}
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="appointments" className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle>Próximos Turnos</CardTitle>
+                    <CardTitle>
+                      {user.user_type === 'patient' ? 'Próximos Turnos' : 'Próximas Citas'}
+                    </CardTitle>
                     <CardDescription>
-                      Tus citas médicas programadas
+                      {user.user_type === 'patient' 
+                        ? 'Tus citas médicas programadas' 
+                        : 'Citas programadas con pacientes'
+                      }
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {appointments.length > 0 ? (
+                    {loading ? (
+                      <div className="text-center py-6">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
+                        <p className="text-gray-500 mt-2">Cargando...</p>
+                      </div>
+                    ) : appointments.length > 0 ? (
                       <div className="space-y-4">
                         {appointments.map((appointment) => (
                           <div
@@ -218,10 +302,13 @@ export default function DashboardPage() {
                     ) : (
                       <div className="text-center py-6">
                         <p className="text-gray-500">
-                          No tienes turnos programados
+                          {user.user_type === 'patient' 
+                            ? 'No tienes turnos programados' 
+                            : 'No tienes citas programadas'
+                          }
                         </p>
                         <Button className="mt-2" variant="outline">
-                          Agendar Turno
+                          {user.user_type === 'patient' ? 'Agendar Turno' : 'Programar Cita'}
                         </Button>
                       </div>
                     )}
@@ -248,16 +335,20 @@ export default function DashboardPage() {
             <TabsContent value="schedule">
               <Card>
                 <CardHeader>
-                  <CardTitle>Agendar Nuevo Turno</CardTitle>
+                  <CardTitle>
+                    {user.user_type === 'patient' ? 'Agendar Nuevo Turno' : 'Programar Nueva Cita'}
+                  </CardTitle>
                   <CardDescription>
-                    Selecciona especialidad, médico y horario disponible
+                    {user.user_type === 'patient' 
+                      ? 'Selecciona especialidad, médico y horario disponible'
+                      : 'Selecciona paciente y horario disponible'
+                    }
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {/* Appointment scheduling form would go here */}
                     <p className="text-center py-6 text-gray-500">
-                      Formulario de agendamiento de turnos
+                      Formulario de agendamiento de {user.user_type === 'patient' ? 'turnos' : 'citas'}
                     </p>
                   </div>
                 </CardContent>
@@ -267,5 +358,13 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <ProtectedRoute requireAuth={true}>
+      <DashboardContent />
+    </ProtectedRoute>
   );
 }

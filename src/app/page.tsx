@@ -1,8 +1,13 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function Home() {
+  const { isAuthenticated, user, logout, loading } = useAuth();
+
   const caracteristicas = [
     {
       title: "Calendario Inteligente",
@@ -20,6 +25,18 @@ export default function Home() {
         "Acceso seguro al historial de cada paciente para un seguimiento personalizado.",
     },
   ];
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -45,12 +62,28 @@ export default function Home() {
             </span>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/login">
-              <Button variant="outline">Iniciar Sesión</Button>
-            </Link>
-            <Link href="/register">
-              <Button>Registrarse</Button>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <span className="text-gray-700">
+                  Hola, {user?.name}
+                </span>
+                <Link href="/dashboard">
+                  <Button variant="outline">Dashboard</Button>
+                </Link>
+                <Button onClick={logout} variant="destructive">
+                  Cerrar Sesión
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="outline">Iniciar Sesión</Button>
+                </Link>
+                <Link href="/register">
+                  <Button>Registrarse</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -66,11 +99,19 @@ export default function Home() {
                 consultorios organizan y optimizan la atención médica.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/register">
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Comenzar Ahora
-                  </Button>
-                </Link>
+                {isAuthenticated ? (
+                  <Link href="/dashboard">
+                    <Button size="lg" className="w-full sm:w-auto">
+                      Ir al Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/register">
+                    <Button size="lg" className="w-full sm:w-auto">
+                      Comenzar Ahora
+                    </Button>
+                  </Link>
+                )}
                 <Link href="#features">
                   <Button
                     size="lg"

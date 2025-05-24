@@ -16,13 +16,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast-context";
+import { useAuth } from "@/contexts/auth-context";
+import { ProtectedRoute } from "@/components/protected-route";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,8 +52,8 @@ export default function LoginPage() {
         return;
       }
 
-      // Store token in localStorage
-      localStorage.setItem("token", data.token);
+      // Use auth context login method
+      await login(data.token);
       
       toast({
         title: "Inicio de sesión exitoso",
@@ -147,5 +150,13 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+      <LoginPageContent />
+    </ProtectedRoute>
   );
 }
