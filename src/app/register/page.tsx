@@ -17,8 +17,10 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast-context";
+import { useAuth } from "@/contexts/auth-context";
+import { ProtectedRoute } from "@/components/protected-route";
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -29,6 +31,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -86,8 +89,8 @@ export default function RegisterPage() {
         return;
       }
 
-      // Store token in localStorage
-      localStorage.setItem("token", data.token);
+      // Use auth context login method
+      await login(data.token);
       
       toast({
         title: "Registro exitoso",
@@ -214,5 +217,13 @@ export default function RegisterPage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+      <RegisterPageContent />
+    </ProtectedRoute>
   );
 }
