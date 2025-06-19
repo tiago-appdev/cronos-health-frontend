@@ -29,11 +29,11 @@ import {
   Eye,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  patientHistoryApi,
-  authApi,
-  doctorsApi,
-} from "@/lib/api-medical-records";
+import { patientHistoryApi } from "@/lib/api-medical-records";
+import { useAuth } from "@/contexts/auth-context";
+
+import jsPDF from "jspdf";
+// import "jspdf-autotable";
 import { useToast } from "@/components/ui/toast-context";
 
 interface HistorySummary {
@@ -44,9 +44,11 @@ interface HistorySummary {
 }
 
 interface Consultation {
-  id: string;
-  patient_id: string;
-  doctor_id: string;
+  id: string | number;
+  patient_id: string | number;
+  doctor_id: string | number;
+  doctor_name?: string;
+  doctor_specialty?: string;
   date: string;
   diagnosis: string;
   treatment?: string;
@@ -55,54 +57,46 @@ interface Consultation {
 }
 
 interface Prescription {
-  id: string;
-  medical_record_id: string;
+  id: string | number;
+  medical_record_id: string | number;
   medication: string;
   dosage: string;
   frequency: string;
   duration?: string;
   created_at: string;
-  doctor_id?: string;
+  doctor_id?: string | number;
+  doctor_name?: string;
+  doctor_specialty?: string;
 }
 
 interface MedicalTest {
-  id: string;
-  medical_record_id: string;
+  id: string | number;
+  medical_record_id: string | number;
   test_name: string;
   test_date: string;
   results?: string;
   notes?: string;
   created_at?: string;
-  doctor_id?: string;
+  doctor_id?: string | number;
+  doctor_name?: string;
+  doctor_specialty?: string;
 }
 
 interface PatientNote {
-  id: string;
-  patient_id: string;
-  doctor_id: string;
+  id: string | number;
+  patient_id: string | number;
+  doctor_id: string | number;
+  doctor_name?: string;
+  doctor_specialty?: string;
   note: string;
   created_at: string;
   type?: string;
 }
 
-interface Doctor {
-  id: string;
-  name: string;
-  specialty?: string;
-  email?: string;
-}
-
-interface CurrentUser {
-  id: string;
-  name: string;
-  email: string;
-  userType: string;
-}
-
 export default function PatientHistoryPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const { user } = useAuth();
   const [summary, setSummary] = useState<HistorySummary>({
     consultations: 0,
     prescriptions: 0,
@@ -113,20 +107,21 @@ export default function PatientHistoryPage() {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [tests, setTests] = useState<MedicalTest[]>([]);
   const [notes, setNotes] = useState<PatientNote[]>([]);
-  const [doctors, setDoctors] = useState<{ [key: string]: Doctor }>({});
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("records");
   const [tabLoading, setTabLoading] = useState<{ [key: string]: boolean }>({});
 
-  // Helper function to get doctor name from cache
-  const getDoctorName = (doctorId: string | number): string => {
-    const doctor = doctors[doctorId.toString()];
-    if (doctor) {
-      return `Dr. ${doctor.name}${
-        doctor.specialty ? ` - ${doctor.specialty}` : ""
+  // Helper function to get doctor name
+  const getDoctorName = (item: any): string => {
+    if (item.doctor_name) {
+      return `${item.doctor_name}${
+        item.doctor_specialty ? ` - ${item.doctor_specialty}` : ""
       }`;
     }
-    return `Dr. Médico ${doctorId}`; // Fallback while loading
+    if (item.doctor_id) {
+      return `Dr. Médico ${item.doctor_id}`;
+    }
+    return "Doctor no especificado";
   };
 
   // Helper function to format date safely
@@ -163,91 +158,293 @@ export default function PatientHistoryPage() {
     }
   };
 
-  // Function to load doctor information
-  const loadDoctorInfo = async (doctorIds: string[]) => {
+  // Function to generate PDF
+  const generatePDF = async () => {
     try {
-      // Filter out IDs we already have
-      const uniqueIds = [...new Set(doctorIds)].filter((id) => !doctors[id]);
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.width;
+      const margin = 20;
+      let yPosition = margin;
 
-      if (uniqueIds.length === 0) return;
+      // Header
+      doc.setFontSize(20);
+      doc.setTextColor(20, 184, 166); // Teal color
+      doc.text("Cronos Health", margin, yPosition);
 
-      console.log("Loading doctor info for IDs:", uniqueIds);
+      yPosition += 10;
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Historial Médico Completo", margin, yPosition);
 
-      // Try to get doctors by batch first, fallback to individual calls
-      try {
-        const doctorsData = await doctorsApi.getDoctorsByIds(uniqueIds);
-        const doctorsMap = { ...doctors };
+      yPosition += 8;
+      doc.setFontSize(12);
+      doc.text(`Paciente: ${user?.name || "Usuario"}`, margin, yPosition);
 
-        doctorsData.forEach((doctor: Doctor) => {
-          doctorsMap[doctor.id] = doctor;
+      yPosition += 6;
+      doc.text(
+        `Fecha de generación: ${new Date().toLocaleDateString("es-ES")}`,
+        margin,
+        yPosition
+      );
+
+      yPosition += 15;
+
+      // Summary section
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Resumen del Historial", margin, yPosition);
+      yPosition += 10;
+
+      const summaryData = [
+        ["Consultas", summary.consultations.toString()],
+        ["Recetas", summary.prescriptions.toString()],
+        ["Exámenes", summary.tests.toString()],
+        ["Notas", summary.notes.toString()],
+      ];
+      (doc as any).autoTable({
+        startY: yPosition,
+        head: [["Tipo", "Cantidad"]],
+        body: summaryData,
+        theme: "grid",
+        headStyles: { fillColor: [20, 184, 166] },
+        margin: { left: margin, right: margin },
+      });
+
+      yPosition = (doc as any).lastAutoTable.finalY + 20;
+
+      // Load all data if not loaded
+      let allConsultations = consultations;
+      let allPrescriptions = prescriptions;
+      let allTests = tests;
+      let allNotes = notes;
+
+      if (allConsultations.length === 0) {
+        allConsultations = (await patientHistoryApi.getConsultations()) || [];
+      }
+      if (allPrescriptions.length === 0) {
+        allPrescriptions = (await patientHistoryApi.getPrescriptions()) || [];
+      }
+      if (allTests.length === 0) {
+        allTests = (await patientHistoryApi.getTests()) || [];
+      }
+      if (allNotes.length === 0) {
+        allNotes = (await patientHistoryApi.getNotes()) || [];
+      }
+
+      // Consultations section
+      if (allConsultations.length > 0) {
+        // Check if we need a new page
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = margin;
+        }
+
+        doc.setFontSize(14);
+        doc.text("Consultas Médicas", margin, yPosition);
+        yPosition += 10;
+
+        const consultationsData = allConsultations.map((consultation) => [
+          formatDate(consultation.date),
+          getDoctorName(consultation),
+          consultation.diagnosis,
+          consultation.treatment || "N/A",
+        ]);
+        (doc as any).autoTable({
+          startY: yPosition,
+          head: [["Fecha", "Médico", "Diagnóstico", "Tratamiento"]],
+          body: consultationsData,
+          theme: "grid",
+          headStyles: { fillColor: [20, 184, 166] },
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 8, cellPadding: 3 },
+          columnStyles: {
+            0: { cellWidth: 25 },
+            1: { cellWidth: 40 },
+            2: { cellWidth: 50 },
+            3: { cellWidth: 55 },
+          },
         });
 
-        setDoctors(doctorsMap);
-      } catch (batchError) {
-        console.log(
-          "Batch request failed, trying individual requests:",
-          batchError
-        );
-
-        // Fallback: individual requests
-        const doctorsMap = { ...doctors };
-
-        await Promise.allSettled(
-          uniqueIds.map(async (doctorId) => {
-            try {
-              const doctor = await doctorsApi.getDoctorById(doctorId);
-              doctorsMap[doctorId] = doctor;
-            } catch (error) {
-              console.error(`Failed to load doctor ${doctorId}:`, error);
-              // Create a placeholder doctor entry
-              doctorsMap[doctorId] = {
-                id: doctorId,
-                name: `Médico ${doctorId}`,
-                specialty: "Especialidad no disponible",
-              };
-            }
-          })
-        );
-
-        setDoctors(doctorsMap);
+        yPosition = (doc as any).lastAutoTable.finalY + 15;
       }
-    } catch (error) {
-      console.error("Error loading doctor information:", error);
 
-      // Create placeholder entries for all requested IDs
-      const doctorsMap = { ...doctors };
-      doctorIds.forEach((doctorId) => {
-        if (!doctorsMap[doctorId]) {
-          doctorsMap[doctorId] = {
-            id: doctorId,
-            name: `Médico ${doctorId}`,
-            specialty: "Especialidad no disponible",
-          };
+      // Prescriptions section
+      if (allPrescriptions.length > 0) {
+        // Check if we need a new page
+        if (yPosition > 200) {
+          doc.addPage();
+          yPosition = margin;
         }
+
+        doc.setFontSize(14);
+        doc.text("Recetas Médicas", margin, yPosition);
+        yPosition += 10;
+
+        const prescriptionsData = allPrescriptions.map((prescription) => [
+          prescription.medication,
+          prescription.dosage,
+          prescription.frequency,
+          prescription.duration || "N/A",
+          getDoctorName(prescription),
+          formatDate(prescription.created_at),
+        ]);
+        (doc as any).autoTable({
+          startY: yPosition,
+          head: [
+            [
+              "Medicamento",
+              "Dosis",
+              "Frecuencia",
+              "Duración",
+              "Médico",
+              "Fecha",
+            ],
+          ],
+          body: prescriptionsData,
+          theme: "grid",
+          headStyles: { fillColor: [20, 184, 166] },
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 8, cellPadding: 3 },
+          columnStyles: {
+            0: { cellWidth: 30 },
+            1: { cellWidth: 20 },
+            2: { cellWidth: 25 },
+            3: { cellWidth: 20 },
+            4: { cellWidth: 35 },
+            5: { cellWidth: 25 },
+          },
+        });
+
+        yPosition = (doc as any).lastAutoTable.finalY + 15;
+      }
+
+      // Tests section
+      if (allTests.length > 0) {
+        // Check if we need a new page
+        if (yPosition > 200) {
+          doc.addPage();
+          yPosition = margin;
+        }
+
+        doc.setFontSize(14);
+        doc.text("Exámenes Médicos", margin, yPosition);
+        yPosition += 10;
+
+        const testsData = allTests.map((test) => [
+          test.test_name,
+          formatDate(test.test_date),
+          test.results || "Pendiente",
+          getDoctorName(test),
+        ]);
+        (doc as any).autoTable({
+          startY: yPosition,
+          head: [["Examen", "Fecha", "Resultados", "Médico"]],
+          body: testsData,
+          theme: "grid",
+          headStyles: { fillColor: [20, 184, 166] },
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 8, cellPadding: 3 },
+          columnStyles: {
+            0: { cellWidth: 40 },
+            1: { cellWidth: 25 },
+            2: { cellWidth: 50 },
+            3: { cellWidth: 40 },
+          },
+        });
+
+        yPosition = (doc as any).lastAutoTable.finalY + 15;
+      }
+
+      // Notes section
+      if (allNotes.length > 0) {
+        // Check if we need a new page
+        if (yPosition > 200) {
+          doc.addPage();
+          yPosition = margin;
+        }
+
+        doc.setFontSize(14);
+        doc.text("Notas Médicas", margin, yPosition);
+        yPosition += 10;
+
+        const notesData = allNotes.map((note) => [
+          formatDate(note.created_at, true),
+          getDoctorName(note),
+          note.note.length > 100
+            ? note.note.substring(0, 100) + "..."
+            : note.note,
+        ]);
+        (doc as any).autoTable({
+          startY: yPosition,
+          head: [["Fecha", "Médico", "Nota"]],
+          body: notesData,
+          theme: "grid",
+          headStyles: { fillColor: [20, 184, 166] },
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 8, cellPadding: 3 },
+          columnStyles: {
+            0: { cellWidth: 35 },
+            1: { cellWidth: 40 },
+            2: { cellWidth: 80 },
+          },
+        });
+      }
+
+      // Footer
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(128, 128, 128);
+        doc.text(
+          `Página ${i} de ${pageCount} - Generado por Cronos Health`,
+          pageWidth / 2,
+          doc.internal.pageSize.height - 10,
+          { align: "center" }
+        );
+      }
+
+      // Save the PDF
+      const fileName = `historial-medico-${
+        user?.name?.replace(/\s+/g, "-").toLowerCase() || "paciente"
+      }-${new Date().toISOString().split("T")[0]}.pdf`;
+      doc.save(fileName);
+
+      toast({
+        title: "PDF Generado",
+        description: "El historial médico se ha descargado correctamente",
       });
-      setDoctors(doctorsMap);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo generar el PDF del historial médico",
+        type: "error",
+      });
     }
   };
 
-  // Load current user and summary
+  // Load initial data (summary)
   useEffect(() => {
     const loadInitialData = async () => {
+      if (!user) return;
+
       try {
         setLoading(true);
-
-        // Get current user and summary in parallel
-        const [user, summaryData] = await Promise.all([
-          authApi.getCurrentUser(),
-          patientHistoryApi.getSummary(),
-        ]);
-
-        setCurrentUser(user);
-        setSummary(summaryData);
+        const summaryData = await patientHistoryApi.getSummary();
+        setSummary(
+          summaryData || {
+            consultations: 0,
+            prescriptions: 0,
+            tests: 0,
+            notes: 0,
+          }
+        );
       } catch (error) {
-        console.error("Error loading initial data:", error);
+        console.error("Error loading summary:", error);
         toast({
           title: "Error",
-          description: "No se pudieron cargar los datos iniciales",
+          description: "No se pudo cargar el resumen del historial",
           type: "error",
         });
       } finally {
@@ -256,12 +453,12 @@ export default function PatientHistoryPage() {
     };
 
     loadInitialData();
-  }, [toast]);
+  }, [user, toast]);
 
   // Load data based on active tab
   useEffect(() => {
     const loadTabData = async () => {
-      if (loading) return; // Don't load tab data if still loading initial data
+      if (loading || !user) return;
 
       try {
         setTabLoading((prev) => ({ ...prev, [activeTab]: true }));
@@ -271,58 +468,29 @@ export default function PatientHistoryPage() {
             if (consultations.length === 0) {
               const consultationsData =
                 await patientHistoryApi.getConsultations();
-              console.log("Consultations data:", consultationsData);
-              setConsultations(consultationsData);
-
-              // Load doctor information for consultations
-              const doctorIds = consultationsData.map((c: Consultation) =>
-                c.doctor_id.toString()
-              );
-              await loadDoctorInfo(doctorIds);
+              setConsultations(consultationsData || []);
             }
             break;
+
           case "prescriptions":
             if (prescriptions.length === 0) {
               const prescriptionsData =
                 await patientHistoryApi.getPrescriptions();
-              console.log("Prescriptions data:", prescriptionsData);
-              setPrescriptions(prescriptionsData);
-
-              // Load doctor information for prescriptions (if available)
-              const doctorIds = prescriptionsData
-                .filter((p: Prescription) => p.doctor_id)
-                .map((p: Prescription) => p.doctor_id!.toString());
-              if (doctorIds.length > 0) {
-                await loadDoctorInfo(doctorIds);
-              }
+              setPrescriptions(prescriptionsData || []);
             }
             break;
+
           case "tests":
             if (tests.length === 0) {
               const testsData = await patientHistoryApi.getTests();
-              console.log("Tests data:", testsData);
-              setTests(testsData);
-
-              // Load doctor information for tests (if available)
-              const doctorIds = testsData
-                .filter((t: MedicalTest) => t.doctor_id)
-                .map((t: MedicalTest) => t.doctor_id!.toString());
-              if (doctorIds.length > 0) {
-                await loadDoctorInfo(doctorIds);
-              }
+              setTests(testsData || []);
             }
             break;
+
           case "notes":
             if (notes.length === 0) {
               const notesData = await patientHistoryApi.getNotes();
-              console.log("Notes data:", notesData);
-              setNotes(notesData);
-
-              // Load doctor information for notes
-              const doctorIds = notesData.map((n: PatientNote) =>
-                n.doctor_id.toString()
-              );
-              await loadDoctorInfo(doctorIds);
+              setNotes(notesData || []);
             }
             break;
         }
@@ -342,6 +510,7 @@ export default function PatientHistoryPage() {
   }, [
     activeTab,
     loading,
+    user,
     consultations.length,
     prescriptions.length,
     tests.length,
@@ -382,14 +551,14 @@ export default function PatientHistoryPage() {
                 alt="Avatar"
               />
               <AvatarFallback>
-                {currentUser?.name
+                {user?.name
                   ?.split(" ")
                   .map((n) => n[0])
                   .join("") || "U"}
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-medium">{currentUser?.name || "Usuario"}</p>
+              <p className="font-medium">{user?.name || "Usuario"}</p>
               <p className="text-sm text-gray-500">Paciente</p>
             </div>
           </div>
@@ -455,7 +624,7 @@ export default function PatientHistoryPage() {
         <header className="sticky top-0 z-10 bg-white border-b h-16 flex items-center px-4 md:px-6">
           <div className="flex justify-between items-center w-full">
             <h1 className="text-xl font-semibold">Mi Historial Médico</h1>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={generatePDF}>
               <Download className="h-4 w-4 mr-2" />
               Descargar PDF
             </Button>
@@ -560,7 +729,7 @@ export default function PatientHistoryPage() {
                                   {formatDate(consultation.date)}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                  {getDoctorName(consultation.doctor_id)}
+                                  {getDoctorName(consultation)}
                                 </p>
                               </div>
                               <Badge variant="outline">
@@ -625,9 +794,7 @@ export default function PatientHistoryPage() {
                               </Badge>
                             </div>
                             <p className="text-sm text-gray-600 mb-3">
-                              {prescription.doctor_id
-                                ? getDoctorName(prescription.doctor_id)
-                                : "Doctor no especificado"}
+                              {getDoctorName(prescription)}
                             </p>
                             <div className="grid md:grid-cols-2 gap-4">
                               <div>
@@ -695,9 +862,7 @@ export default function PatientHistoryPage() {
                               </Badge>
                             </div>
                             <p className="text-sm text-gray-600 mb-3">
-                              {test.doctor_id
-                                ? getDoctorName(test.doctor_id)
-                                : "Doctor no especificado"}
+                              {getDoctorName(test)}
                             </p>
                             <div className="grid md:grid-cols-1 gap-4">
                               <div>
@@ -753,7 +918,7 @@ export default function PatientHistoryPage() {
                                   {formatDate(note.created_at, true)}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                  {getDoctorName(note.doctor_id)}
+                                  {getDoctorName(note)}
                                 </p>
                               </div>
                               <div className="flex flex-col items-end gap-2">

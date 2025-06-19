@@ -20,6 +20,13 @@ export const medicalRecordsApi = {
     return response.data;
   },
 
+  // Get detailed medical records (includes doctor info for prescriptions and tests)
+  getDetailedRecords: async (patientId: number) => {
+    const patientIdStr = patientId.toString();
+    const response = await api.get(`/medical-records/patient/${patientIdStr}`);
+    return response.data;
+  },
+
   // Create medical record
   createRecord: async (data: {
     patientId: string;
@@ -173,22 +180,17 @@ export const authApi = {
   },
 };
 
-export const doctorsApi = {
-  // Get doctor by ID
-  getDoctorById: async (doctorId: string) => {
-    const response = await api.get(`/doctors/${doctorId}`);
+// Admin API to get doctor information
+export const adminApi = {
+  // Get user by ID (includes doctor profile)
+  getUserById: async (userId: string) => {
+    const response = await api.get(`/admin/users/${userId}`);
     return response.data;
   },
 
-  // Get multiple doctors by IDs
-  getDoctorsByIds: async (doctorIds: string[]) => {
-    const response = await api.post("/doctors/batch", { doctorIds });
-    return response.data;
-  },
-
-  // Get all doctors (fallback)
-  getAllDoctors: async () => {
-    const response = await api.get("/doctors");
+  // Get all users (includes doctors)
+  getAllUsers: async () => {
+    const response = await api.get("/admin/users");
     return response.data;
   },
 };
