@@ -9,12 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Clock, ChevronLeft, ChevronRight, User, Plus } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { Sidebar } from "@/components/ui/sidebar"
 
 export default function CalendarPage() {
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [view, setView] = useState("day")
-  const router = useRouter()
 
   // Mock appointments data
   const appointments = [
@@ -77,6 +76,8 @@ export default function CalendarPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+          <Sidebar currentPage="calendar" />
+
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center space-x-2">
