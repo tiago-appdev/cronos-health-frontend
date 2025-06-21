@@ -189,7 +189,11 @@ function DashboardContent() {
               Mi Perfil
             </Link>
             <Link
-              href="/dashboard/medical-panel"
+              href={
+                user.user_type === "patient"
+                  ? "/dashboard/history"
+                  : "/dashboard/medical-panel"
+              }
               className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
             >
               <FileText className="mr-3 h-5 w-5" />
