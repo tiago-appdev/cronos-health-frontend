@@ -46,11 +46,24 @@ export interface UserUpdateData {
   password?: string;
 }
 
+export interface UserCreateData {
+  name: string;
+  email: string;
+  password: string;
+  userType: "patient" | "doctor" | "admin";
+}
+
 export const adminApi = {
   // Get all users with their profiles
   getAllUsers: async (): Promise<User[]> => {
     const response = await api.get("/admin/users");
     return response.data;
+  },
+
+  // Create new user
+  createUser: async (userData: UserCreateData): Promise<User> => {
+    const response = await api.post("/admin/users", userData);
+    return response.data.user;
   },
 
   // Get specific user with profile
