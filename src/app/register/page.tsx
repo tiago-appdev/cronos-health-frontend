@@ -90,7 +90,7 @@ function RegisterPageContent() {
       }
 
       // Use auth context login method
-      await login(data.token);
+      const user = await login(data.token);
       
       toast({
         title: "Registro exitoso",
@@ -98,8 +98,12 @@ function RegisterPageContent() {
         type: "success",
       });
       
-      // Redirect to dashboard
-      router.push("/dashboard");
+      // Redirect based on user type
+      if (user && user.user_type === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (error) {
       console.error("Error during registration:", error);
       toast({

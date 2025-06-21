@@ -20,9 +20,12 @@ import {
   Loader2,
   FileText,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { appointmentsApi, medicalRecordsApi } from "@/services/api";
 import { useToast } from "@/components/ui/toast-context";
+import { useAuth } from "@/contexts/auth-context";
 import { Sidebar } from "@/components/ui/sidebar";
+import { ProtectedRoute } from "@/components/protected-route";
 
 interface Patient {
   id: string;
@@ -69,8 +72,22 @@ interface PatientNote {
   createdAt: string;
 }
 
-export default function MedicalPanelPage() {
+function MedicalPanelContent() {
+  const { user } = useAuth();
+  const router = useRouter();
   const { toast } = useToast();
+
+  // Redirect patients away from this page
+  useEffect(() => {
+    if (user && user.user_type === "patient") {
+      toast({
+        title: "Acceso Denegado",
+        description: "Esta página es solo para médicos",
+        type: "error",
+      });
+      router.push("/dashboard");
+    }
+  }, [user, router, toast]);
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
@@ -548,5 +565,13 @@ export default function MedicalPanelPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function MedicalPanelPage() {
+  return (
+    <ProtectedRoute requireAuth={true} allowedUserTypes={["doctor", "admin"]}>
+      <MedicalPanelContent />
+    </ProtectedRoute>
   );
 }
