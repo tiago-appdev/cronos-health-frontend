@@ -141,6 +141,85 @@ export const authApi = {
   },
 };
 
+export const messagesApi = {
+  // Get all conversations for current user
+  getConversations: async () => {
+    const response = await api.get("/messages/conversations");
+    return response.data;
+  },
+
+  // Get messages for a specific conversation
+  getConversationMessages: async (conversationId: string, limit = 50, offset = 0) => {
+    const response = await api.get(`/messages/conversations/${conversationId}`, {
+      params: { limit, offset }
+    });
+    return response.data;
+  },
+
+  // Send a message
+  sendMessage: async (data: {
+    conversationId: string;
+    text: string;
+    messageType?: string;
+    replyToMessageId?: string;
+  }) => {
+    const response = await api.post("/messages", data);
+    return response.data;
+  },
+
+  // Create or get conversation with another user
+  createOrGetConversation: async (otherUserId: string) => {
+    const response = await api.post("/messages/conversations", { otherUserId });
+    return response.data;
+  },
+
+  // Search for users
+  searchUsers: async (searchTerm: string, userType?: string) => {
+    const response = await api.get("/messages/users/search", {
+      params: { q: searchTerm, type: userType }
+    });
+    return response.data;
+  },
+
+  // Get related users (doctors/patients with appointments)
+  getRelatedUsers: async () => {
+    const response = await api.get("/messages/users/related");
+    return response.data;
+  },
+
+  // Mark message as read
+  markMessageAsRead: async (messageId: string, conversationId?: string) => {
+    const response = await api.put(`/messages/${messageId}/read`, { conversationId });
+    return response.data;
+  },
+
+  // Edit a message
+  editMessage: async (messageId: string, text: string) => {
+    const response = await api.put(`/messages/${messageId}`, { text });
+    return response.data;
+  },
+
+  // Delete a message
+  deleteMessage: async (messageId: string) => {
+    const response = await api.delete(`/messages/${messageId}`);
+    return response.data;
+  },
+
+  // Get unread message count
+  getUnreadCount: async () => {
+    const response = await api.get("/messages/unread-count");
+    return response.data;
+  },
+
+  // Check for new messages
+  checkNewMessages: async (lastCheckTime: string) => {
+    const response = await api.get("/messages/check-new", {
+      params: { lastCheck: lastCheckTime }
+    });
+    return response.data;
+  },
+};
+
 export const medicalStaffApi = {
   // Get all medical staff
   getMedicalStaff: async () => {
