@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, act } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +40,8 @@ import { useRouter } from "next/navigation";
 import { profileApi } from "@/lib/api-medical-records";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/components/ui/toast-context";
+import { getNavigationItems } from "@/components/ui/sidebar";
+import { NotificationCenter } from "@/components/ui/notification-center";
 
 interface PatientProfile {
   id: number;
@@ -187,89 +189,84 @@ export default function ProfilePage() {
   };
 
   // Get navigation items based on user type
-  const getNavigationItems = () => {
-    if (profile?.user_type === "doctor") {
-      return [
-        {
-          href: "/dashboard",
-          icon: CalendarIcon,
-          label: "Agenda",
-          active: false,
-        },
-        {
-          href: "/dashboard/medical-panel",
-          icon: FileText,
-          label: "Historial Clínico",
-          active: false,
-        },
-        {
-          href: "/dashboard/profile",
-          icon: User,
-          label: "Mi Perfil",
-          active: true,
-        },
-        {
-          href: "/dashboard/chat",
-          icon: MessageSquare,
-          label: "Chat",
-          active: false,
-        },
-        {
-          href: "/dashboard/notifications",
-          icon: Bell,
-          label: "Notificaciones",
-          active: false,
-        },
-        {
-          href: "/dashboard/settings",
-          icon: Settings,
-          label: "Configuración",
-          active: false,
-        },
-      ];
-    } else {
-      return [
-        {
-          href: "/dashboard",
-          icon: CalendarIcon,
-          label: "Mis Turnos",
-          active: false,
-        },
-        {
-          href: "/dashboard/profile",
-          icon: User,
-          label: "Mi Perfil",
-          active: true,
-        },
-        {
-          href: "/dashboard/history",
-          icon: FileText,
-          label: "Historial Médico",
-          active: false,
-        },
-        {
-          href: "/dashboard/chat",
-          icon: MessageSquare,
-          label: "Chat",
-          active: false,
-        },
-        {
-          href: "/dashboard/notifications",
-          icon: Bell,
-          label: "Notificaciones",
-          active: false,
-        },
-        {
-          href: "/dashboard/settings",
-          icon: Settings,
-          label: "Configuración",
-          active: false,
-        },
-      ];
-    }
-  };
+  // const getNavigationItems = () => {
+  //   const baseItems = [
+  //     {
+  //       id: "profile",
+  //       href: "/dashboard/profile",
+  //       icon: User,
+  //       label: "Mi Perfil",
+  //       active: true,
+  //     },
+  //     {
+  //       id: "chat",
+  //       href: "/dashboard/chat",
+  //       icon: MessageSquare,
+  //       label: "Chat",
+  //       active: false,
+  //     },
+  //   ];
 
-  const navigationItems = getNavigationItems();
+  //   if (profile?.user_type === "doctor") {
+  //     return [
+  //       {
+  //         href: "/dashboard",
+  //         icon: CalendarIcon,
+  //         label: "Agenda",
+  //         active: false,
+  //       },
+  //       ...baseItems.slice(0, 1), // Profile,
+  //       {
+  //         href: "/dashboard/medical-panel",
+  //         icon: FileText,
+  //         label: "Historial de Pacientes",
+  //         active: false,
+  //       },
+  //       ...baseItems.slice(1), // Chat
+  //     ];
+  //   } else {
+  //     return [
+  //       {
+  //         href: "/dashboard",
+  //         icon: CalendarIcon,
+  //         label: "Mis Turnos",
+  //         active: false,
+  //       },
+  //       {
+  //         href: "/dashboard/profile",
+  //         icon: User,
+  //         label: "Mi Perfil",
+  //         active: true,
+  //       },
+  //       {
+  //         href: "/dashboard/history",
+  //         icon: FileText,
+  //         label: "Historial Médico",
+  //         active: false,
+  //       },
+  //       {
+  //         href: "/dashboard/chat",
+  //         icon: MessageSquare,
+  //         label: "Chat",
+  //         active: false,
+  //       },
+  //       {
+  //         href: "/dashboard/notifications",
+  //         icon: Bell,
+  //         label: "Notificaciones",
+  //         active: false,
+  //       },
+  //       {
+  //         href: "/dashboard/settings",
+  //         icon: Settings,
+  //         label: "Configuración",
+  //         active: false,
+  //       },
+  //     ];
+  //   }
+  // };
+
+  const navigationItems = getNavigationItems(user);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -310,12 +307,13 @@ export default function ProfilePage() {
                   .join("") || "U"}
               </AvatarFallback>
             </Avatar>
-            <div>
+            <div className="flex-1">
               <p className="font-medium">{profile?.name || "Usuario"}</p>
               <p className="text-sm text-gray-500">
                 {profile?.user_type === "doctor" ? "Médico" : "Paciente"}
               </p>
             </div>
+            <NotificationCenter />
           </div>
           <nav className="flex-1 p-4 space-y-1">
             {navigationItems.map((item) => {

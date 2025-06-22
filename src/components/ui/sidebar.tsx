@@ -7,15 +7,98 @@ import {
   User,
   FileText,
   MessageSquare,
-  Settings,
   LogOut,
   Loader2,
+  BellIcon,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import { ar } from "date-fns/locale";
 
 interface SidebarProps {
-  currentPage: string; // 'dashboard' | 'profile' | 'history' | 'medical-panel' | 'chat' | 'notifications' | 'settings'
+  currentPage: string; // 'dashboard' | 'profile' | 'history' | 'medical-panel' | 'chat' | 'notifications'
 }
+
+interface IUser {
+  id: string;
+  name: string;
+  email: string;
+  user_type: "patient" | "doctor" | "admin";
+}
+
+// Navigation items based on user type
+export const getNavigationItems = (user: IUser | null) => {
+  const baseItems = [
+    {
+      id: "profile",
+      href: "/dashboard/profile",
+      icon: User,
+      label: "Mi Perfil",
+      active: true,
+    },
+    {
+      id: "chat",
+      href: "/dashboard/chat",
+      icon: MessageSquare,
+      label: "Chat",
+      active: false,
+    },
+  ];
+  if (user?.user_type === "patient") {
+    return [
+      {
+        id: "dashboard",
+        href: "/dashboard",
+        icon: CalendarIcon,
+        label: "Mis Turnos",
+        active: false,
+      },
+      ...baseItems.slice(0, 1), // Profile
+      {
+        id: "history",
+        href: "/dashboard/history",
+        icon: FileText,
+        label: "Historial Médico",
+        active: false,
+      },
+      ...baseItems.slice(1), // Chat
+      {
+        id: "notifications",
+        href: "/dashboard/notifications",
+        // icon CampaignIcon
+        icon: BellIcon,
+        label: "Notificaciones",
+        active: false,
+      },
+    ];
+  } else {
+    return [
+      {
+        id: "dashboard",
+        href: "/dashboard",
+        icon: CalendarIcon,
+        label: "Agenda",
+        active: false,
+      },
+      ...baseItems.slice(0, 1), // Profile
+      {
+        id: "medical-panel",
+        href: "/dashboard/medical-panel",
+        icon: FileText,
+        label: "Historial de Pacientes",
+        active: false,
+      },
+      ...baseItems.slice(1), // Chat
+      {
+        id: "notifications",
+        href: "/dashboard/notifications",
+        // icon CampaignIcon
+        icon: BellIcon,
+        label: "Notificaciones",
+        active: false,
+      },
+    ];
+  }
+};
 
 export function Sidebar({ currentPage }: SidebarProps) {
   const { user, logout, loggingOut } = useAuth();
@@ -34,69 +117,12 @@ export function Sidebar({ currentPage }: SidebarProps) {
   const getUserTypeDisplay = (userType: string) => {
     return userType === "patient" ? "Paciente" : "Médico";
   };
-  // Navigation items based on user type
-  const getNavigationItems = () => {
-    const baseItems = [
-      {
-        id: 'profile',
-        href: '/dashboard/profile',
-        icon: User,
-        label: 'Mi Perfil'
-      },
-      {
-        id: 'chat',
-        href: '/dashboard/chat',
-        icon: MessageSquare,
-        label: 'Chat'
-      },
-      {
-        id: 'settings',
-        href: '/dashboard/settings',
-        icon: Settings,
-        label: 'Configuración'
-      }
-    ];    if (user?.user_type === "patient") {
-      return [
-        {
-          id: 'dashboard',
-          href: '/dashboard',
-          icon: CalendarIcon,
-          label: 'Mis Turnos'
-        },
-        ...baseItems.slice(0, 1), // Profile
-        {
-          id: 'history',
-          href: '/dashboard/history',
-          icon: FileText,
-          label: 'Historial Médico'
-        },
-        ...baseItems.slice(1) // Chat, Settings
-      ];
-    } else {
-      return [
-        {
-          id: 'dashboard',
-          href: '/dashboard',
-          icon: CalendarIcon,
-          label: 'Mis Citas'
-        },
-        ...baseItems.slice(0, 1), // Profile
-        {
-          id: 'medical-panel',
-          href: '/dashboard/medical-panel',
-          icon: FileText,
-          label: 'Historial de Pacientes'
-        },
-        ...baseItems.slice(1) // Chat, Settings
-      ];
-    }
-  };
 
-  const navigationItems = getNavigationItems();
+  const navigationItems = getNavigationItems(user);
 
   const handleLogout = async () => {
     if (!loggingOut) {
-      await logout();
+      logout();
     }
   };
 
@@ -106,7 +132,9 @@ export function Sidebar({ currentPage }: SidebarProps) {
       <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
-          <p className="text-lg font-medium text-gray-700">Cerrando sesión...</p>
+          <p className="text-lg font-medium text-gray-700">
+            Cerrando sesión...
+          </p>
         </div>
       </div>
     );
@@ -130,13 +158,13 @@ export function Sidebar({ currentPage }: SidebarProps) {
           >
             <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
           </svg>
-          <span className="text-xl font-bold text-teal-600">
-            Cronos Health
-          </span>
+          <span className="text-xl font-bold text-teal-600">Cronos Health</span>
         </Link>
       </div>
-      
-      <div className="flex flex-col flex-1 overflow-y-auto">        <div className="flex items-center p-4 border-b">
+
+      <div className="flex flex-col flex-1 overflow-y-auto">
+        {" "}
+        <div className="flex items-center p-4 border-b">
           <Avatar className="h-10 w-10 mr-3">
             <AvatarImage
               src="/placeholder.svg?height=40&width=40"
@@ -154,12 +182,11 @@ export function Sidebar({ currentPage }: SidebarProps) {
           </div>
           <NotificationCenter />
         </div>
-        
         <nav className="flex-1 p-4 space-y-1">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id;
-            
+
             return (
               <Link
                 key={item.id}
@@ -176,7 +203,6 @@ export function Sidebar({ currentPage }: SidebarProps) {
             );
           })}
         </nav>
-        
         <div className="p-4 border-t">
           <Button
             variant="ghost"
