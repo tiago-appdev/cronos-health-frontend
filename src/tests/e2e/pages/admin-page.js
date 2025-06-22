@@ -9,27 +9,36 @@ export class AdminPage extends BasePage {
   async gotoAdmin() {
     await this.goto('/admin');
     await this.waitForElement('text=Panel de Administración');
-  }
-
-  async goToUsersManagement() {
-    await this.clickAndWait(SELECTORS.admin.usersTab);
+  }  async goToUsersManagement() {
+    await this.page.click(SELECTORS.admin.usersTab);
+    await this.page.waitForTimeout(1000); // Wait for tab to switch
+    await this.waitForElement('text=Administra todos los usuarios del sistema');
   }
 
   async goToSurveys() {
-    await this.clickAndWait(SELECTORS.admin.surveysTab);
+    await this.page.click(SELECTORS.admin.surveysTab);
+    await this.page.waitForTimeout(1000); // Wait for tab to switch
+    await this.waitForElement('text=Todas las encuestas de satisfacción enviadas por pacientes');
   }
-
   async createNewUser(userData) {
     await this.clickAndWait(SELECTORS.admin.newUserButton);
     
-    await this.fillForm({
-      'input[id="name"]': userData.name,
-      'input[id="email"]': userData.email,
-      'input[id="password"]': userData.password
-    });
+    // Wait for the modal to appear
+    await this.waitForElement('text=Crear Nuevo Usuario');
+    
+    // Fill form using more specific selectors for the modal
+    await this.page.fill('input[placeholder="Nombre completo"]', userData.name);
+    await this.page.fill('input[placeholder="correo@ejemplo.com"]', userData.email);
+    await this.page.fill('input[placeholder="Contraseña"]', userData.password);
 
-    // Select user type
-    await this.page.click(`input[value="${userData.userType}"]`);
+    // Select user type using the radio button labels
+    if (userData.userType === 'doctor') {
+      await this.page.click('label[for="new-doctor"]');
+    } else if (userData.userType === 'admin') {
+      await this.page.click('label[for="new-admin"]');
+    } else {
+      await this.page.click('label[for="new-patient"]');
+    }
     
     await this.clickAndWait('text=Crear Usuario');
     await this.waitForElement('text=Usuario creado');
@@ -49,7 +58,6 @@ export class AdminPage extends BasePage {
     await this.page.click('text=Sí');
     await this.waitForElement('text=Usuario eliminado');
   }
-
   async expectUserCreated() {
     await this.waitForElement('text=Usuario creado');
   }

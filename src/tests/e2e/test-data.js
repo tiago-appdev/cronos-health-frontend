@@ -117,11 +117,10 @@ export const SELECTORS = {
     submitButton: 'text=Enviar',
     nextButton: 'text=Siguiente'
   },
-
   // Admin
   admin: {
-    usersTab: 'text=Gestión de Usuarios',
-    surveysTab: 'text=Encuestas',
+    usersTab: '[role="tab"]:has-text("Gestión de Usuarios")',
+    surveysTab: '[role="tab"]:has-text("Encuestas")',
     newUserButton: 'text=Nuevo Usuario',
     userTypeSelect: '[data-testid="user-type-select"]'
   }

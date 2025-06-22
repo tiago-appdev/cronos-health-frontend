@@ -792,9 +792,8 @@ function AdminPageContent() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {filteredUsers.length > 0 ? (
-                        filteredUsers.map((user) => (
-                          <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                      {filteredUsers.length > 0 ? (                        filteredUsers.map((user) => (
+                          <div key={user.id} data-testid="user-card" className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                             <div className="flex items-center space-x-4">
                               <Avatar className="h-12 w-12">
                                 <AvatarFallback>
@@ -925,9 +924,8 @@ function AdminPageContent() {
                       <span>Cargando encuestas...</span>
                     </div>
                   ) : allSurveys.length > 0 ? (
-                    <div className="space-y-4">
-                      {allSurveys.map((survey) => (
-                        <div key={survey.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                    <div className="space-y-4">                      {allSurveys.map((survey) => (
+                        <div key={survey.id} data-testid="survey-card" className="border rounded-lg p-4 hover:bg-gray-50">
                           <div className="flex justify-between items-start mb-3">
                             <div>
                               <div className="font-medium">{survey.patient_name}</div>
