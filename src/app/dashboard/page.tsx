@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -39,6 +39,54 @@ function DashboardContent() {
 	const [appointments, setAppointments] = useState<Appointment[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [activeTab, setActiveTab] = useState("appointments");
+
+	// Sort appointments by date and time
+	const sortedAppointments = useMemo(() => {
+		return [...appointments].sort((a, b) => {
+			// Parse the fullDate for both appointments
+			let dateA = new Date(a.fullDate);
+			let dateB = new Date(b.fullDate);
+			
+			// If fullDate is not available or invalid, try to construct from date and time
+			if (isNaN(dateA.getTime())) {
+				dateA = new Date(`${a.date} ${a.time}`);
+			}
+			if (isNaN(dateB.getTime())) {
+				dateB = new Date(`${b.date} ${b.time}`);
+			}
+			
+			// If dates are still invalid, fall back to basic string comparison
+			if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+				// Sort by status priority: scheduled > completed > canceled
+				const statusOrder = { 'scheduled': 1, 'completed': 2, 'canceled': 3 };
+				const statusA = statusOrder[a.status as keyof typeof statusOrder] || 4;
+				const statusB = statusOrder[b.status as keyof typeof statusOrder] || 4;
+				
+				if (statusA !== statusB) {
+					return statusA - statusB;
+				}
+				
+				// If same status, sort by date string
+				return a.date.localeCompare(b.date);
+			}
+			
+			const now = new Date();
+			const isAFuture = dateA > now;
+			const isBFuture = dateB > now;
+			
+			// Group by time relationship to now
+			if (isAFuture && isBFuture) {
+				// Both future: sort chronologically (earliest first)
+				return dateA.getTime() - dateB.getTime();
+			} else if (!isAFuture && !isBFuture) {
+				// Both past: sort reverse chronologically (most recent first)
+				return dateB.getTime() - dateA.getTime();
+			} else {
+				// Mixed: future appointments first
+				return isAFuture ? -1 : 1;
+			}
+		});
+	}, [appointments]);
 
 	// Format user type for display
 	const getUserTypeDisplay = (userType: string) => {
@@ -81,6 +129,7 @@ function DashboardContent() {
 			});
 		}
 	};
+	
 	// Mark appointment as completed (for doctors)
 	const handleCompleteAppointment = async (appointmentId: number) => {
 		try {
@@ -239,9 +288,9 @@ function DashboardContent() {
 													Cargando...
 												</p>
 											</div>
-										) : appointments.length > 0 ? (
+										) : sortedAppointments.length > 0 ? (
 											<div className="space-y-4">
-												{appointments.map(
+												{sortedAppointments.map(
 													(appointment) => (
 														<div
 															key={appointment.id}
@@ -433,7 +482,7 @@ function DashboardContent() {
 											selected={date}
 											onSelect={setDate}
 											className="rounded-md border"
-											appointmentDates={appointments.map(
+											appointmentDates={sortedAppointments.map(
 												(appointment) => {
 													const date = new Date(
 														appointment.fullDate

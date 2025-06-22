@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -35,13 +35,53 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
   const [loadingDoctors, setLoadingDoctors] = useState(true);
   const { toast } = useToast();
 
-  // Time slots available for appointments
-  const timeSlots = [
+  // All available time slots
+  const allTimeSlots = [
     "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
     "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
     "14:00", "14:30", "15:00", "15:30", "16:00", "16:30",
     "17:00", "17:30", "18:00"
   ];
+
+  // Filter time slots based on selected date
+  const availableTimeSlots = useMemo(() => {
+    if (!selectedDate) return allTimeSlots;
+
+    const today = new Date();
+    const isToday = selectedDate.toDateString() === today.toDateString();
+
+    if (!isToday) {
+      return allTimeSlots;
+    }
+
+    // If it's today, filter out past hours
+    const currentHour = today.getHours();
+    const currentMinutes = today.getMinutes();
+
+    return allTimeSlots.filter(timeSlot => {
+      const [hours, minutes] = timeSlot.split(':').map(Number);
+      const slotTime = hours * 60 + minutes;
+      const currentTime = currentHour * 60 + currentMinutes;
+      
+      // Add 30 minutes buffer to allow for booking
+      return slotTime > currentTime + 30;
+    });
+  }, [selectedDate]);
+
+  // Clear selected time if it's no longer available
+  useEffect(() => {
+    if (selectedTime && !availableTimeSlots.includes(selectedTime)) {
+      setSelectedTime("");
+    }
+  }, [availableTimeSlots, selectedTime]);
+
+  // Clear selected date if it becomes invalid (e.g., time passes and no slots available)
+  useEffect(() => {
+    if (selectedDate && isDateDisabled(selectedDate)) {
+      setSelectedDate(undefined);
+      setSelectedTime("");
+    }
+  }, [selectedDate]);
 
   // Fetch available doctors
   useEffect(() => {
@@ -147,11 +187,40 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
     }
   };
 
-  // Filter out past dates
+  // Check if a date has available time slots
+  const getAvailableSlotsForDate = (date: Date) => {
+    const today = new Date();
+    const isToday = date.toDateString() === today.toDateString();
+
+    if (!isToday) {
+      return allTimeSlots;
+    }
+
+    // If it's today, filter out past hours
+    const currentHour = today.getHours();
+    const currentMinutes = today.getMinutes();
+
+    return allTimeSlots.filter(timeSlot => {
+      const [hours, minutes] = timeSlot.split(':').map(Number);
+      const slotTime = hours * 60 + minutes;
+      const currentTime = currentHour * 60 + currentMinutes;
+      
+      // Add 30 minutes buffer to allow for booking
+      return slotTime > currentTime + 30;
+    });
+  };
+
+  // Filter out past dates and dates with no available slots
   const isDateDisabled = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return date < today;
+    
+    // Don't allow past dates
+    if (date < today) return true;
+    
+    // Don't allow dates with no available time slots
+    const availableSlots = getAvailableSlotsForDate(date);
+    return availableSlots.length === 0;
   };
 
   if (loadingDoctors) {
@@ -228,16 +297,29 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
                 <SelectValue placeholder="Elige una hora" />
               </SelectTrigger>
               <SelectContent>
-                {timeSlots.map((time) => (
-                  <SelectItem key={time} value={time}>
-                    <div className="flex items-center">
-                      <Clock className="mr-2 h-4 w-4" />
-                      {time}
-                    </div>
-                  </SelectItem>
-                ))}
+                {availableTimeSlots.length > 0 ? (
+                  availableTimeSlots.map((time) => (
+                    <SelectItem key={time} value={time}>
+                      <div className="flex items-center">
+                        <Clock className="mr-2 h-4 w-4" />
+                        {time}
+                      </div>
+                    </SelectItem>
+                  ))
+                ) : (
+                  <div className="p-2 text-sm text-gray-500 text-center">
+                    No hay horarios disponibles
+                  </div>
+                )}
               </SelectContent>
             </Select>
+            {selectedDate && availableTimeSlots.length === 0 && (
+              <p className="text-sm text-amber-600">
+                No hay horarios disponibles para el día seleccionado. 
+                {selectedDate.toDateString() === new Date().toDateString() && 
+                  " Intenta seleccionar un día futuro."}
+              </p>
+            )}
           </div>
 
           {/* Selected Doctor Info */}
@@ -258,7 +340,7 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || availableTimeSlots.length === 0}>
             {loading ? "Agendando..." : "Agendar Cita"}
           </Button>
         </form>

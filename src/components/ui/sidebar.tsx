@@ -9,6 +9,7 @@ import {
   Bell,
   Settings,
   LogOut,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -17,7 +18,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ currentPage }: SidebarProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, loggingOut } = useAuth();
 
   // Get user initials for avatar
   const getInitials = (name: string) => {
@@ -102,6 +103,24 @@ export function Sidebar({ currentPage }: SidebarProps) {
 
   const navigationItems = getNavigationItems();
 
+  const handleLogout = async () => {
+    if (!loggingOut) {
+      await logout();
+    }
+  };
+
+  // Show logout overlay when logging out
+  if (loggingOut) {
+    return (
+      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
+          <p className="text-lg font-medium text-gray-700">Cerrando sesión...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="hidden md:flex w-64 flex-col fixed inset-y-0 bg-white border-r">
       <div className="flex items-center h-16 px-4 border-b">
@@ -170,11 +189,21 @@ export function Sidebar({ currentPage }: SidebarProps) {
         <div className="p-4 border-t">
           <Button
             variant="ghost"
-            className="w-full justify-start text-gray-600"
-            onClick={logout}
+            className="w-full justify-start text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+            onClick={handleLogout}
+            disabled={loggingOut}
           >
-            <LogOut className="mr-3 h-5 w-5" />
-            Cerrar Sesión
+            {loggingOut ? (
+              <>
+                <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                Cerrando sesión...
+              </>
+            ) : (
+              <>
+                <LogOut className="mr-3 h-5 w-5" />
+                Cerrar Sesión
+              </>
+            )}
           </Button>
         </div>
       </div>
