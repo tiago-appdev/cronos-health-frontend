@@ -63,6 +63,6 @@ test.describe('Authentication', () => {
     await authPage.login(TEST_USERS.patient.email, TEST_USERS.patient.password);
     await authPage.expectLoginSuccess('patient');
     await authPage.logout();
-    await authPage.page.waitForURL('/');
+    await authPage.page.waitForURL('/login');
   });
 });

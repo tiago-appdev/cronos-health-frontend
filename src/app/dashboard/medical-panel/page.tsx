@@ -307,10 +307,10 @@ function MedicalPanelContent() {
 									</div>
 								) : (
 									<div className="space-y-2">
-										{filteredPatients.length > 0 ? (
-											filteredPatients.map((patient) => (
+										{filteredPatients.length > 0 ? (											filteredPatients.map((patient) => (
 												<div
 													key={patient.id}
+													data-testid="patient-card"
 													className={`p-3 rounded-lg cursor-pointer ${
 														selectedPatient ===
 														patient.id
