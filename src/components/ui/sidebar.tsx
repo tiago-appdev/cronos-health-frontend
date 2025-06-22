@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NotificationCenter } from "@/components/ui/notification-center";
 import {
   CalendarIcon,
   User,
   FileText,
   MessageSquare,
-  Bell,
   Settings,
   LogOut,
   Loader2,
@@ -34,7 +34,6 @@ export function Sidebar({ currentPage }: SidebarProps) {
   const getUserTypeDisplay = (userType: string) => {
     return userType === "patient" ? "Paciente" : "Médico";
   };
-
   // Navigation items based on user type
   const getNavigationItems = () => {
     const baseItems = [
@@ -51,20 +50,12 @@ export function Sidebar({ currentPage }: SidebarProps) {
         label: 'Chat'
       },
       {
-        id: 'notifications',
-        href: '/dashboard/notifications',
-        icon: Bell,
-        label: 'Notificaciones'
-      },
-      {
         id: 'settings',
         href: '/dashboard/settings',
         icon: Settings,
         label: 'Configuración'
       }
-    ];
-
-    if (user?.user_type === "patient") {
+    ];    if (user?.user_type === "patient") {
       return [
         {
           id: 'dashboard',
@@ -79,7 +70,7 @@ export function Sidebar({ currentPage }: SidebarProps) {
           icon: FileText,
           label: 'Historial Médico'
         },
-        ...baseItems.slice(1) // Chat, Notifications, Settings
+        ...baseItems.slice(1) // Chat, Settings
       ];
     } else {
       return [
@@ -96,7 +87,7 @@ export function Sidebar({ currentPage }: SidebarProps) {
           icon: FileText,
           label: 'Historial de Pacientes'
         },
-        ...baseItems.slice(1) // Chat, Notifications, Settings
+        ...baseItems.slice(1) // Chat, Settings
       ];
     }
   };
@@ -145,8 +136,7 @@ export function Sidebar({ currentPage }: SidebarProps) {
         </Link>
       </div>
       
-      <div className="flex flex-col flex-1 overflow-y-auto">
-        <div className="flex items-center p-4 border-b">
+      <div className="flex flex-col flex-1 overflow-y-auto">        <div className="flex items-center p-4 border-b">
           <Avatar className="h-10 w-10 mr-3">
             <AvatarImage
               src="/placeholder.svg?height=40&width=40"
@@ -156,12 +146,13 @@ export function Sidebar({ currentPage }: SidebarProps) {
               {user ? getInitials(user.name) : "U"}
             </AvatarFallback>
           </Avatar>
-          <div>
+          <div className="flex-1">
             <p className="font-medium">{user?.name}</p>
             <p className="text-sm text-gray-500">
               {user ? getUserTypeDisplay(user.user_type) : "Usuario"}
             </p>
           </div>
+          <NotificationCenter />
         </div>
         
         <nav className="flex-1 p-4 space-y-1">
