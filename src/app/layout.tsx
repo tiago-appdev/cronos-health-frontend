@@ -3,31 +3,32 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast-context";
 import { AuthProvider } from "@/contexts/auth-context";
+import { SurveyProvider } from "@/contexts/survey-context";
 
 export const metadata: Metadata = {
-  title: "Cronos Health",
-  description: "A program to help you manage your health",
+	title: "Cronos Health",
+	description: "A program to help you manage your health",
 };
 
 const roboto = Roboto({
-  weight: "400",
-  subsets: ["latin"],
+	weight: "400",
+	subsets: ["latin"],
 });
 
 export default function RootLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  return (
-    <html lang="es" className={roboto.className}>
-      <body>
-        <AuthProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </AuthProvider>
-      </body>
-    </html>
-  );
+	return (
+		<html lang="es" className={roboto.className}>
+			<body>
+				<AuthProvider>
+					<ToastProvider>
+						<SurveyProvider>{children}</SurveyProvider>
+					</ToastProvider>
+				</AuthProvider>
+			</body>
+		</html>
+	);
 }

@@ -25,11 +25,13 @@ import {
   X,
   Save,
   Bell,
+  Star,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/components/ui/toast-context";
 import { adminApi, DoctorProfile, PatientProfile, type User, type UserUpdateData, type UserCreateData } from "@/services/admin-api";
 import { analyticsApi, type SystemStats, type RecentActivity, type AppointmentDistribution } from "@/services/analytics-api";
+import { surveyApi, type SurveyStats, type Survey } from "@/services/survey-api";
 import { ProtectedRoute } from "@/components/protected-route";
 
 function AdminPageContent() {
@@ -46,6 +48,9 @@ function AdminPageContent() {
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [appointmentDistribution, setAppointmentDistribution] = useState<AppointmentDistribution[]>([]);
+  const [surveyStats, setSurveyStats] = useState<SurveyStats | null>(null);
+  const [allSurveys, setAllSurveys] = useState<Survey[]>([]);
+  const [surveysLoading, setSurveysLoading] = useState(false);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   
   // Modal state
@@ -57,6 +62,7 @@ function AdminPageContent() {
   const [profileUser, setProfileUser] = useState<User | null>(null);
   const [profileType, setProfileType] = useState<"patient" | "doctor">("patient");
   const [showNewUserModal, setShowNewUserModal] = useState(false);
+  const [activeAdminTab, setActiveAdminTab] = useState("overview");
   
   // Form state
   const [editFormData, setEditFormData] = useState({
@@ -88,15 +94,17 @@ function AdminPageContent() {
     const loadAnalytics = async () => {
       try {
         setAnalyticsLoading(true);
-        const [statsData, activityData, distributionData] = await Promise.all([
+        const [statsData, activityData, distributionData, surveyStatsData] = await Promise.all([
           analyticsApi.getSystemStats(),
           analyticsApi.getRecentActivity(5),
           analyticsApi.getAppointmentDistribution(),
+          surveyApi.getSurveyStats(),
         ]);
         
         setStats(statsData);
         setRecentActivity(activityData);
         setAppointmentDistribution(distributionData);
+        setSurveyStats(surveyStatsData);
       } catch (error) {
         console.error("Error loading analytics:", error);
         toast({
@@ -108,9 +116,28 @@ function AdminPageContent() {
         setAnalyticsLoading(false);
       }
     };
-
+    
     loadAnalytics();
   }, [toast]);
+
+
+      // Load all surveys
+  const loadAllSurveys = async () => {
+    try {
+      setSurveysLoading(true);
+      const surveys = await surveyApi.getAllSurveys(100, 0);
+      setAllSurveys(surveys);
+    } catch (error) {
+      console.error("Error loading surveys:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las encuestas",
+        type: "error",
+      });
+    } finally {
+      setSurveysLoading(false);
+    }
+  };
 
   // Load users
   useEffect(() => {
@@ -130,8 +157,16 @@ function AdminPageContent() {
         setLoading(false);
       }
     };
+    
     loadUsers();
   }, [toast]);
+
+  // Load all surveys when surveys tab is selected
+  useEffect(() => {
+    if (activeAdminTab === "surveys" && allSurveys.length === 0) {
+      loadAllSurveys();
+    }
+  }, [activeAdminTab, allSurveys.length]);
 
   // Create new user
   const handleNewUser = () => {
@@ -462,10 +497,11 @@ function AdminPageContent() {
           <h1 className="text-xl font-semibold">Panel de Administración</h1>
         </header>
         <main className="p-4 md:p-6">
-          <Tabs defaultValue="overview">
+          <Tabs value={activeAdminTab} onValueChange={setActiveAdminTab}>
             <TabsList className="mb-6">
               <TabsTrigger value="overview">Resumen</TabsTrigger>
               <TabsTrigger value="users">Gestión de Usuarios</TabsTrigger>
+              <TabsTrigger value="surveys">Encuestas</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -599,6 +635,64 @@ function AdminPageContent() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Survey Statistics */}
+              {surveyStats && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Estadísticas de Encuestas</CardTitle>
+                    <CardDescription>Satisfacción y recomendaciones de pacientes</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      <div className="text-center p-4 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-teal-600">{surveyStats.totalSurveys}</div>
+                        <p className="text-sm text-gray-500">Total Encuestas</p>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <h4 className="font-medium">Calificaciones Promedio</h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Facilidad de agenda:</span>
+                            <span className="font-medium">{surveyStats.averageRatings.appointmentEase}/5</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Puntualidad:</span>
+                            <span className="font-medium">{surveyStats.averageRatings.punctuality}/5</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Personal médico:</span>
+                            <span className="font-medium">{surveyStats.averageRatings.medicalStaff}/5</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Plataforma:</span>
+                            <span className="font-medium">{surveyStats.averageRatings.platform}/5</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <h4 className="font-medium">¿Recomendarían?</h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-green-600">Sí:</span>
+                            <span className="font-medium">{surveyStats.recommendations.yes}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-red-600">No:</span>
+                            <span className="font-medium">{surveyStats.recommendations.no}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Tal vez:</span>
+                            <span className="font-medium">{surveyStats.recommendations.maybe}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="users" className="space-y-6">
@@ -772,6 +866,140 @@ function AdminPageContent() {
                       )}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="surveys" className="space-y-6">
+              {/* Survey Management */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Gestión de Encuestas</CardTitle>
+                      <CardDescription>Todas las encuestas de satisfacción enviadas por pacientes</CardDescription>
+                    </div>
+                    <Button onClick={loadAllSurveys} disabled={surveysLoading}>
+                      {surveysLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : null}
+                      Actualizar
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {/* Survey Statistics Summary */}
+                  {surveyStats && (
+                    <div className="grid gap-4 md:grid-cols-4 mb-6">
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-teal-600">{surveyStats.totalSurveys}</div>
+                          <p className="text-xs text-gray-500">Total Encuestas</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-blue-600">{surveyStats.averageRatings.medicalStaff}</div>
+                          <p className="text-xs text-gray-500">Promedio Personal Médico</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-green-600">{surveyStats.averageRatings.platform}</div>
+                          <p className="text-xs text-gray-500">Promedio Plataforma</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-purple-600">{surveyStats.recommendations.yes}</div>
+                          <p className="text-xs text-gray-500">Recomendarían</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
+
+                  {/* All Surveys List */}
+                  {surveysLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin mr-3" />
+                      <span>Cargando encuestas...</span>
+                    </div>
+                  ) : allSurveys.length > 0 ? (
+                    <div className="space-y-4">
+                      {allSurveys.map((survey) => (
+                        <div key={survey.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <div className="font-medium">{survey.patient_name}</div>
+                              <div className="text-sm text-gray-500">
+                                {formatDate(survey.created_at)}
+                                {survey.doctor_name && (
+                                  <span className="ml-2">• Dr. {survey.doctor_name}</span>
+                                )}
+                                {survey.doctor_specialty && (
+                                  <span className="ml-1">({survey.doctor_specialty})</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {survey.would_recommend === "yes" && (
+                                <Badge variant="default" className="bg-green-500">Recomendaría</Badge>
+                              )}
+                              {survey.would_recommend === "no" && (
+                                <Badge variant="destructive">No recomendaría</Badge>
+                              )}
+                              {survey.would_recommend === "maybe" && (
+                                <Badge variant="secondary">Tal vez</Badge>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+                            <div className="text-center">
+                              <div className="flex items-center justify-center mb-1">
+                                <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                                <span className="font-medium">{survey.appointment_ease_rating}</span>
+                              </div>
+                              <p className="text-xs text-gray-500">Facilidad de agenda</p>
+                            </div>
+                            <div className="text-center">
+                              <div className="flex items-center justify-center mb-1">
+                                <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                                <span className="font-medium">{survey.punctuality_rating}</span>
+                              </div>
+                              <p className="text-xs text-gray-500">Puntualidad</p>
+                            </div>
+                            <div className="text-center">
+                              <div className="flex items-center justify-center mb-1">
+                                <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                                <span className="font-medium">{survey.medical_staff_rating}</span>
+                              </div>
+                              <p className="text-xs text-gray-500">Personal médico</p>
+                            </div>
+                            <div className="text-center">
+                              <div className="flex items-center justify-center mb-1">
+                                <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                                <span className="font-medium">{survey.platform_rating}</span>
+                              </div>
+                              <p className="text-xs text-gray-500">Plataforma</p>
+                            </div>
+                          </div>
+
+                          {survey.additional_comments && (
+                            <div className="bg-gray-50 p-3 rounded-md">
+                              <p className="text-sm text-gray-700 italic">&ldquo;{survey.additional_comments}&rdquo;</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : allSurveys.length === 0 && !surveysLoading ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <Star className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p>No hay encuestas disponibles</p>
+                      <p className="text-sm">Las encuestas aparecerán aquí cuando los pacientes las envíen</p>
+                    </div>
+                  ) : null}
                 </CardContent>
               </Card>
             </TabsContent>
