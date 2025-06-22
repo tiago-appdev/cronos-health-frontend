@@ -27,6 +27,8 @@ interface Appointment {
 	id: number;
 	doctor: string;
 	specialty: string;
+	patient?: string;
+	patientAge?: number;
 	date: string;
 	time: string;
 	status: string;
@@ -330,9 +332,10 @@ function DashboardContent() {
 															<div className="flex-1">
 																<div className="flex items-center justify-between mb-1">
 																	<h3 className="font-medium">
-																		{
-																			appointment.doctor
-																		}
+																		{user.user_type ===
+																		"patient"
+																			? `Dr. ${appointment.doctor}`
+																			: appointment.patient}
 																	</h3>
 																	<Badge
 																		variant={
@@ -355,9 +358,14 @@ function DashboardContent() {
 																	</Badge>
 																</div>
 																<p className="text-sm text-gray-500">
-																	{
-																		appointment.specialty
-																	}
+																	{user.user_type ===
+																	"patient"
+																		? appointment.specialty
+																		: `Consulta${
+																				appointment.patientAge
+																					? ` - ${appointment.patientAge} años`
+																					: ""
+																		  }`}
 																</p>
 																<div className="flex items-center mt-2 text-sm text-gray-600">
 																	<CalendarIcon className="h-4 w-4 mr-1" />
@@ -372,7 +380,8 @@ function DashboardContent() {
 																			appointment.time
 																		}
 																	</span>
-																</div>{" "}
+																</div>
+																{/* Rest of the appointment actions remain the same */}
 																{appointment.status ===
 																	"scheduled" && (
 																	<div className="flex mt-3 space-x-2">
@@ -431,61 +440,7 @@ function DashboardContent() {
 																			</>
 																		)}
 																	</div>
-																)}{" "}
-																{appointment.status ===
-																	"completed" &&
-																	user.user_type ===
-																		"patient" &&
-																	!surveyedAppointments.has(
-																		appointment.id
-																	) && (
-																		<div className="flex mt-3 space-x-2">
-																			<Button
-																				variant="outline"
-																				size="sm"
-																				onClick={() => {
-																					// Redirect to survey with appointment data
-																					const surveyUrl = `/survey?appointmentId=${
-																						appointment.id
-																					}&doctorName=${encodeURIComponent(
-																						appointment.doctor
-																					)}&specialty=${encodeURIComponent(
-																						appointment.specialty
-																					)}&date=${encodeURIComponent(
-																						appointment.date
-																					)}`;
-																					window.location.href =
-																						surveyUrl;
-																				}}
-																			>
-																				📝
-																				Evaluar
-																				Atención
-																			</Button>
-																		</div>
-																	)}
-																{/* Show message if already surveyed */}
-																{appointment.status ===
-																	"completed" &&
-																	user.user_type ===
-																		"patient" &&
-																	surveyedAppointments.has(
-																		appointment.id
-																	) && (
-																		<div className="flex mt-3">
-																			<span className="text-sm text-green-600 font-medium">
-																				✅
-																				Atención
-																				evaluada
-																			</span>
-																		</div>
-																	)}
-																{appointment.status ===
-																	"scheduled" &&
-																	user.user_type ===
-																		"doctor" && (
-																		<div className="flex mt-3 space-x-2"></div>
-																	)}
+																)}
 															</div>
 														</div>
 													)
