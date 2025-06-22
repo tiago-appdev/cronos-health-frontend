@@ -3,11 +3,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
@@ -35,254 +35,249 @@ interface Appointment {
 }
 
 function DashboardContent() {
-	const { user } = useAuth();
-	const { toast } = useToast();
-	const { showSurveyToast } = useSurvey();
-	const [date, setDate] = useState<Date | undefined>(new Date());
-	const [appointments, setAppointments] = useState<Appointment[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [activeTab, setActiveTab] = useState("appointments");
-	const [surveyedAppointments, setSurveyedAppointments] = useState<
-		Set<number>
-	>(new Set());
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { showSurveyToast } = useSurvey();
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("appointments");
+  const [surveyedAppointments, setSurveyedAppointments] = useState<Set<number>>(
+    new Set()
+  );
 
-	// Sort appointments by date and time
-	const sortedAppointments = useMemo(() => {
-		return [...appointments].sort((a, b) => {
-			// Parse the fullDate for both appointments
-			let dateA = new Date(a.fullDate);
-			let dateB = new Date(b.fullDate);
+  // Sort appointments by date and time
+  const sortedAppointments = useMemo(() => {
+    return [...appointments].sort((a, b) => {
+      // Parse the fullDate for both appointments
+      let dateA = new Date(a.fullDate);
+      let dateB = new Date(b.fullDate);
 
-			// If fullDate is not available or invalid, try to construct from date and time
-			if (isNaN(dateA.getTime())) {
-				dateA = new Date(`${a.date} ${a.time}`);
-			}
-			if (isNaN(dateB.getTime())) {
-				dateB = new Date(`${b.date} ${b.time}`);
-			}
+      // If fullDate is not available or invalid, try to construct from date and time
+      if (isNaN(dateA.getTime())) {
+        dateA = new Date(`${a.date} ${a.time}`);
+      }
+      if (isNaN(dateB.getTime())) {
+        dateB = new Date(`${b.date} ${b.time}`);
+      }
 
-			// If dates are still invalid, fall back to basic string comparison
-			if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-				// Sort by status priority: scheduled > completed > canceled
-				const statusOrder = { scheduled: 1, completed: 2, canceled: 3 };
-				const statusA =
-					statusOrder[a.status as keyof typeof statusOrder] || 4;
-				const statusB =
-					statusOrder[b.status as keyof typeof statusOrder] || 4;
+      // If dates are still invalid, fall back to basic string comparison
+      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+        // Sort by status priority: scheduled > completed > canceled
+        const statusOrder = { scheduled: 1, completed: 2, canceled: 3 };
+        const statusA = statusOrder[a.status as keyof typeof statusOrder] || 4;
+        const statusB = statusOrder[b.status as keyof typeof statusOrder] || 4;
 
-				if (statusA !== statusB) {
-					return statusA - statusB;
-				}
+        if (statusA !== statusB) {
+          return statusA - statusB;
+        }
 
-				// If same status, sort by date string
-				return a.date.localeCompare(b.date);
-			}
+        // If same status, sort by date string
+        return a.date.localeCompare(b.date);
+      }
 
-			const now = new Date();
-			const isAFuture = dateA > now;
-			const isBFuture = dateB > now;
+      const now = new Date();
+      const isAFuture = dateA > now;
+      const isBFuture = dateB > now;
 
-			// Group by time relationship to now
-			if (isAFuture && isBFuture) {
-				// Both future: sort chronologically (earliest first)
-				return dateA.getTime() - dateB.getTime();
-			} else if (!isAFuture && !isBFuture) {
-				// Both past: sort reverse chronologically (most recent first)
-				return dateB.getTime() - dateA.getTime();
-			} else {
-				// Mixed: future appointments first
-				return isAFuture ? -1 : 1;
-			}
-		});
-	}, [appointments]);
+      // Group by time relationship to now
+      if (isAFuture && isBFuture) {
+        // Both future: sort chronologically (earliest first)
+        return dateA.getTime() - dateB.getTime();
+      } else if (!isAFuture && !isBFuture) {
+        // Both past: sort reverse chronologically (most recent first)
+        return dateB.getTime() - dateA.getTime();
+      } else {
+        // Mixed: future appointments first
+        return isAFuture ? -1 : 1;
+      }
+    });
+  }, [appointments]);
 
-	// Format user type for display
-	const getUserTypeDisplay = (userType: string) => {
-		return userType === "patient" ? "Paciente" : "Médico";
-	};
+  // Format user type for display
+  const getUserTypeDisplay = (userType: string) => {
+    return userType === "patient" ? "Paciente" : "Médico";
+  };
 
-	// Cancel appointment
-	const handleCancelAppointment = async (appointmentId: number) => {
-		try {
-			const token = localStorage.getItem("token");
-			const response = await fetch(
-				`http://localhost:4000/api/appointments/${appointmentId}`,
-				{
-					method: "DELETE",
-					headers: { "x-auth-token": token || "" },
-				}
-			);
+  // Cancel appointment
+  const handleCancelAppointment = async (appointmentId: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:4000/api/appointments/${appointmentId}`,
+        {
+          method: "DELETE",
+          headers: { "x-auth-token": token || "" },
+        }
+      );
 
-			if (response.ok) {
-				toast({
-					title: "Éxito",
-					description: "Cita cancelada exitosamente",
-					type: "success",
-				});
-				fetchAppointments(); // Refresh appointments
-			} else {
-				const data = await response.json();
-				toast({
-					title: "Error",
-					description: data.message || "No se pudo cancelar la cita",
-					type: "error",
-				});
-			}
-		} catch (error) {
-			console.error("Error canceling appointment:", error);
-			toast({
-				title: "Error",
-				description: "Error al cancelar la cita",
-				type: "error",
-			});
-		}
-	};
+      if (response.ok) {
+        toast({
+          title: "Éxito",
+          description: "Cita cancelada exitosamente",
+          type: "success",
+        });
+        fetchAppointments(); // Refresh appointments
+      } else {
+        const data = await response.json();
+        toast({
+          title: "Error",
+          description: data.message || "No se pudo cancelar la cita",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error canceling appointment:", error);
+      toast({
+        title: "Error",
+        description: "Error al cancelar la cita",
+        type: "error",
+      });
+    }
+  };
 
-	// Mark appointment as completed (for doctors)
-	const handleCompleteAppointment = async (appointmentId: number) => {
-		try {
-			const token = localStorage.getItem("token");
-			const response = await fetch(
-				`http://localhost:4000/api/appointments/${appointmentId}`,
-				{
-					method: "PUT",
-					headers: {
-						"Content-Type": "application/json",
-						"x-auth-token": token || "",
-					},
-					body: JSON.stringify({ status: "completed" }),
-				}
-			);
+  // Mark appointment as completed (for doctors)
+  const handleCompleteAppointment = async (appointmentId: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:4000/api/appointments/${appointmentId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": token || "",
+          },
+          body: JSON.stringify({ status: "completed" }),
+        }
+      );
 
-			if (response.ok) {
-				const data = await response.json();
+      if (response.ok) {
+        const data = await response.json();
 
-				toast({
-					title: "Éxito",
-					description: "Cita marcada como completada",
-					type: "success",
-				});
+        toast({
+          title: "Éxito",
+          description: "Cita marcada como completada",
+          type: "success",
+        });
 
-				// Find the appointment and show survey toast for patient
-				const completedAppointment = appointments.find(
-					(apt) => apt.id === appointmentId
-				);
-				if (completedAppointment && data.appointment?.patient_id) {
-					// This would typically be handled via real-time notifications
-					// For now, it will be picked up by the SurveyNotification component
-					showSurveyToast({
-						appointmentId: appointmentId,
-						doctorName: completedAppointment.doctor,
-						specialty: completedAppointment.specialty,
-						appointmentDate: completedAppointment.date,
-					});
-				}
+        // Find the appointment and show survey toast for patient
+        const completedAppointment = appointments.find(
+          (apt) => apt.id === appointmentId
+        );
+        if (completedAppointment && data.appointment?.patient_id) {
+          // This would typically be handled via real-time notifications
+          // For now, it will be picked up by the SurveyNotification component
+          showSurveyToast({
+            appointmentId: appointmentId,
+            doctorName: completedAppointment.doctor,
+            specialty: completedAppointment.specialty,
+            appointmentDate: completedAppointment.date,
+          });
+        }
 
-				fetchAppointments(); // Refresh appointments
-			} else {
-				const data = await response.json();
-				toast({
-					title: "Error",
-					description: data.message || "No se pudo completar la cita",
-					type: "error",
-				});
-			}
-		} catch (error) {
-			console.error("Error completing appointment:", error);
-			toast({
-				title: "Error",
-				description: "Error al completar la cita",
-				type: "error",
-			});
-		}
-	};
+        fetchAppointments(); // Refresh appointments
+      } else {
+        const data = await response.json();
+        toast({
+          title: "Error",
+          description: data.message || "No se pudo completar la cita",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error completing appointment:", error);
+      toast({
+        title: "Error",
+        description: "Error al completar la cita",
+        type: "error",
+      });
+    }
+  };
 
-	// Fetch user's appointments
-	const fetchAppointments = async () => {
-		try {
-			const token = localStorage.getItem("token");
-			if (!token) return;
+  // Fetch user's appointments
+  const fetchAppointments = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-			const response = await fetch(
-				"http://localhost:4000/api/appointments",
-				{
-					headers: { "x-auth-token": token },
-				}
-			);
+      const response = await fetch("http://localhost:4000/api/appointments", {
+        headers: { "x-auth-token": token },
+      });
 
-			if (response.ok) {
-				const data = await response.json();
-				setAppointments(data);
-			} else {
-				console.error("Failed to fetch appointments");
-			}
-			setLoading(false);
-		} catch (error) {
-			console.error("Error fetching appointments:", error);
-			setLoading(false);
-		}
-	};
+      if (response.ok) {
+        const data = await response.json();
+        setAppointments(data);
+      } else {
+        console.error("Failed to fetch appointments");
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+      setLoading(false);
+    }
+  };
 
-	useEffect(() => {
-		fetchAppointments();
-	}, []);
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
 
-	// Fetch surveyed appointments for patients
-	useEffect(() => {
-		const fetchSurveyedAppointments = async () => {
-			if (user?.user_type !== "patient") return;
-			try {
-				const surveys = await appointmentApi.getMySurveys();
-				const surveyedIds = new Set<number>();
-				surveys.forEach((survey: { appointment_id?: number }) => {
-					if (typeof survey.appointment_id === "number") {
-						surveyedIds.add(survey.appointment_id);
-					}
-				});
-				setSurveyedAppointments(surveyedIds);
-			} catch (error) {
-				console.error("Error fetching surveyed appointments:", error);
-				// Don't show error toast, just fail silently for this feature
-			}
-		};
+  // Fetch surveyed appointments for patients
+  useEffect(() => {
+    const fetchSurveyedAppointments = async () => {
+      if (user?.user_type !== "patient") return;
+      try {
+        const surveys = await appointmentApi.getMySurveys();
+        const surveyedIds = new Set<number>();
+        surveys.forEach((survey: { appointment_id?: number }) => {
+          if (typeof survey.appointment_id === "number") {
+            surveyedIds.add(survey.appointment_id);
+          }
+        });
+        setSurveyedAppointments(surveyedIds);
+      } catch (error) {
+        console.error("Error fetching surveyed appointments:", error);
+        // Don't show error toast, just fail silently for this feature
+      }
+    };
 
-		if (user) {
-			fetchSurveyedAppointments();
-		}
-	}, [user]);
+    if (user) {
+      fetchSurveyedAppointments();
+    }
+  }, [user]);
 
-	if (!user) {
-		return <div>Loading...</div>;
-	}
+  if (!user) {
+    return <div>Loading...</div>;
+  }
 
-	return (
-		<div className="flex min-h-screen bg-gray-50">
-			{/* Use shared sidebar */}
-			<Sidebar currentPage="dashboard" />
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Use shared sidebar */}
+      <Sidebar currentPage="dashboard" />
 
-			{/* Main content */}
-			<div className="flex-1 md:ml-64">
-				<header className="sticky top-0 z-10 bg-white border-b h-16 flex items-center px-4 md:px-6">
-					<h1 className="text-xl font-semibold">
-						Panel del {getUserTypeDisplay(user.user_type)}
-					</h1>
-				</header>{" "}
-				<main className="p-4 md:p-6">
-					{/* Survey Notifications for Patients */}
-					{user.user_type === "patient" && <SurveyNotification />}
+      {/* Main content */}
+      <div className="flex-1 md:ml-64">
+        <header className="sticky top-0 z-10 bg-white border-b h-16 flex items-center px-4 md:px-6">
+          <h1 className="text-xl font-semibold">
+            Panel del {getUserTypeDisplay(user.user_type)}
+          </h1>
+        </header>{" "}
+        <main className="p-4 md:p-6">
+          {/* Survey Notifications for Patients */}
+          {user.user_type === "patient" && <SurveyNotification />}
 
-					<div className="mb-6">
-						<h2 className="text-2xl font-bold text-gray-900 mb-2">
-							Bienvenido, {user.name}
-						</h2>
-						<p className="text-gray-600">
-							Aquí puedes gestionar tus{" "}
-							{user.user_type === "patient"
-								? "turnos y consultas médicas"
-								: "citas con pacientes"}
-							.
-						</p>
-					</div>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Bienvenido, {user.name}
+            </h2>
+            <p className="text-gray-600">
+              Aquí puedes gestionar tus{" "}
+              {user.user_type === "patient"
+                ? "turnos y consultas médicas"
+                : "citas con pacientes"}
+              .
+            </p>
+          </div>
 
 					<Tabs value={activeTab} onValueChange={setActiveTab}>
 						<TabsList className="mb-4">
@@ -381,7 +376,6 @@ function DashboardContent() {
 																		}
 																	</span>
 																</div>
-																{/* Rest of the appointment actions remain the same */}
 																{appointment.status ===
 																	"scheduled" && (
 																	<div className="flex mt-3 space-x-2">
@@ -536,9 +530,9 @@ function DashboardContent() {
 }
 
 export default function DashboardPage() {
-	return (
-		<ProtectedRoute requireAuth={true}>
-			<DashboardContent />
-		</ProtectedRoute>
-	);
+  return (
+    <ProtectedRoute requireAuth={true}>
+      <DashboardContent />
+    </ProtectedRoute>
+  );
 }
