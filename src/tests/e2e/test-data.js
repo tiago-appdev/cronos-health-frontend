@@ -32,33 +32,43 @@ export const TEST_USERS = {
   }
 };
 
-export const TEST_DATA = {
-  newUser: {
-    patient: {
-      name: "Test Patient User",
-      email: "test.patient@test.com",
-      password: "testpass123",
-      userType: "patient"
+// Generate unique test data for each test run to avoid conflicts
+function generateUniqueTestData() {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  const uniqueId = `${timestamp}_${random}`;
+  
+  return {
+    newUser: {
+      patient: {
+        name: "Test Patient User",
+        email: `test.patient.${uniqueId}@test.com`,
+        password: "testpass123",
+        userType: "patient"
+      },
+      doctor: {
+        name: "Test Doctor User", 
+        email: `test.doctor.${uniqueId}@test.com`,
+        password: "testpass123",
+        userType: "doctor"
+      }
     },
-    doctor: {
-      name: "Test Doctor User", 
-      email: "test.doctor@test.com",
-      password: "testpass123",
-      userType: "doctor"
+    survey: {
+      appointmentEaseRating: 5,
+      punctualityRating: 4,
+      medicalStaffRating: 5,
+      platformRating: 4,
+      wouldRecommend: "yes",
+      additionalComments: "Excellent service, very professional!"
+    },
+    appointment: {
+      time: "10:00"
     }
-  },
-  survey: {
-    appointmentEaseRating: 5,
-    punctualityRating: 4,
-    medicalStaffRating: 5,
-    platformRating: 4,
-    wouldRecommend: "yes",
-    additionalComments: "Excellent service, very professional!"
-  },
-  appointment: {
-    time: "10:00"
-  }
-};
+  };
+}
+
+// Export a new instance of test data for each import
+export const TEST_DATA = generateUniqueTestData();
 
 export const SELECTORS = {
   // Navigation
