@@ -1,13 +1,16 @@
 # Cronos Health — Frontend
 
-Este es el frontend del sistema de gestión de turnos médicos **Cronos Health**, desarrollado con **Next.js**, **TypeScript**, **TailwindCSS** y **Shadcn UI**.
+Este es el frontend del sistema de gestión de turnos médicos **Crono-   [x] Formulario de reserva de turnos
+-   [x] Sistema de notificaciones y recordatorios
+-   [x] Encuestas y métricas de satisfacción
+-   [ ] Chat interno (próximamente)lth**, desarrollado con **Next.js**, **TypeScript**, **TailwindCSS** y **Shadcn UI**.
 
 ## 🚀 Tecnologías Utilizadas
 
-- [Next.js](https://nextjs.org/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Shadcn UI](https://ui.shadcn.com/)
+-   [Next.js](https://nextjs.org/)
+-   [TypeScript](https://www.typescriptlang.org/)
+-   [Tailwind CSS](https://tailwindcss.com/)
+-   [Shadcn UI](https://ui.shadcn.com/)
 
 ## 📦 Instalación
 
@@ -73,19 +76,36 @@ Las llamadas a la API se realizarán mediante `Axios`. El endpoint base se puede
 NEXT_PUBLIC_API_URL=http://localhost:4000/api
 ```
 
+## 🆕 Nuevas Funcionalidades
+
+### Sistema de Notificaciones y Encuestas
+
+-   **Centro de Notificaciones**: Acceso directo desde la barra lateral para ver todas las notificaciones
+-   **Recordatorios de Encuesta**: Notificaciones automáticas cuando se completa una cita médica
+-   **Encuestas de Satisfacción**: Sistema completo para evaluar la atención médica recibida
+-   **Prevención de Duplicados**: Las citas ya evaluadas muestran un estado confirmado
+
+### Mejoras en Agendamiento
+
+-   **Horarios Inteligentes**: Filtrado automático de horarios pasados
+-   **Validación en Tiempo Real**: Verificación de selección de médico y fecha
+-   **Interfaz Mejorada**: Mejor experiencia de usuario al agendar citas
+
 ## ✅ Estado del Proyecto
 
-- [x] Configuración inicial del proyecto
-- [x] Implementación de autenticación
-- [x] Página de inicio de sesión
-- [x] Página de registro
-- [x] Panel de usuario (Dashboard)
-- [x] Calendario de turnos
-- [x] Formulario de reserva de turnos
-- [ ] Chat interno (próximamente)
-- [ ] Encuestas y métricas de satisfacción
-- [ ] Notificaciones en tiempo real
+-   [x] Configuración inicial del proyecto
+-   [x] Implementación de autenticación
+-   [x] Página de inicio de sesión
+-   [x] Página de registro
+-   [x] Panel de usuario (Dashboard)
+-   [x] Calendario de turnos
+-   [x] Formulario de reserva de turnos
+-   [x] Sistema de notificaciones y recordatorios
+-   [x] Encuestas y métricas de satisfacción
+-   [x] Exclusión de horarios ocupados al agendar
+-   [x] Chat interno (próximamente)
+-   [x] Notificaciones en tiempo real
 
 ## 👥 Equipo
 
-- Desarrolladores: Amarfil Carolina, Ibarrola Tiago, Ozuna Maria, Pereyra Maximiliano y Skidelski Dario.
+-   Desarrolladores: Amarfil Carolina, Ibarrola Tiago, Ozuna Maria, Pereyra Maximiliano y Skidelski Dario.

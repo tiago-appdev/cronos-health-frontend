@@ -20,6 +20,7 @@ import { AppointmentBookingForm } from "@/components/ui/appointment-booking-form
 import { SurveyNotification } from "@/components/ui/survey-notification";
 import { useSurvey } from "@/contexts/survey-context";
 import { useToast } from "@/components/ui/toast-context";
+import { appointmentApi } from "@/services/api";
 
 interface Appointment {
 	fullDate: string | number | Date;
@@ -39,6 +40,9 @@ function DashboardContent() {
 	const [appointments, setAppointments] = useState<Appointment[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [activeTab, setActiveTab] = useState("appointments");
+	const [surveyedAppointments, setSurveyedAppointments] = useState<
+		Set<number>
+	>(new Set());
 
 	// Sort appointments by date and time
 	const sortedAppointments = useMemo(() => {
@@ -46,7 +50,7 @@ function DashboardContent() {
 			// Parse the fullDate for both appointments
 			let dateA = new Date(a.fullDate);
 			let dateB = new Date(b.fullDate);
-			
+
 			// If fullDate is not available or invalid, try to construct from date and time
 			if (isNaN(dateA.getTime())) {
 				dateA = new Date(`${a.date} ${a.time}`);
@@ -54,26 +58,28 @@ function DashboardContent() {
 			if (isNaN(dateB.getTime())) {
 				dateB = new Date(`${b.date} ${b.time}`);
 			}
-			
+
 			// If dates are still invalid, fall back to basic string comparison
 			if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
 				// Sort by status priority: scheduled > completed > canceled
-				const statusOrder = { 'scheduled': 1, 'completed': 2, 'canceled': 3 };
-				const statusA = statusOrder[a.status as keyof typeof statusOrder] || 4;
-				const statusB = statusOrder[b.status as keyof typeof statusOrder] || 4;
-				
+				const statusOrder = { scheduled: 1, completed: 2, canceled: 3 };
+				const statusA =
+					statusOrder[a.status as keyof typeof statusOrder] || 4;
+				const statusB =
+					statusOrder[b.status as keyof typeof statusOrder] || 4;
+
 				if (statusA !== statusB) {
 					return statusA - statusB;
 				}
-				
+
 				// If same status, sort by date string
 				return a.date.localeCompare(b.date);
 			}
-			
+
 			const now = new Date();
 			const isAFuture = dateA > now;
 			const isBFuture = dateB > now;
-			
+
 			// Group by time relationship to now
 			if (isAFuture && isBFuture) {
 				// Both future: sort chronologically (earliest first)
@@ -129,7 +135,7 @@ function DashboardContent() {
 			});
 		}
 	};
-	
+
 	// Mark appointment as completed (for doctors)
 	const handleCompleteAppointment = async (appointmentId: number) => {
 		try {
@@ -218,6 +224,30 @@ function DashboardContent() {
 	useEffect(() => {
 		fetchAppointments();
 	}, []);
+
+	// Fetch surveyed appointments for patients
+	useEffect(() => {
+		const fetchSurveyedAppointments = async () => {
+			if (user?.user_type !== "patient") return;
+			try {
+				const surveys = await appointmentApi.getMySurveys();
+				const surveyedIds = new Set<number>();
+				surveys.forEach((survey: { appointment_id?: number }) => {
+					if (typeof survey.appointment_id === "number") {
+						surveyedIds.add(survey.appointment_id);
+					}
+				});
+				setSurveyedAppointments(surveyedIds);
+			} catch (error) {
+				console.error("Error fetching surveyed appointments:", error);
+				// Don't show error toast, just fail silently for this feature
+			}
+		};
+
+		if (user) {
+			fetchSurveyedAppointments();
+		}
+	}, [user]);
 
 	if (!user) {
 		return <div>Loading...</div>;
@@ -403,11 +433,14 @@ function DashboardContent() {
 																			</>
 																		)}
 																	</div>
-																)}
+																)}{" "}
 																{appointment.status ===
 																	"completed" &&
 																	user.user_type ===
-																		"patient" && (
+																		"patient" &&
+																	!surveyedAppointments.has(
+																		appointment.id
+																	) && (
 																		<div className="flex mt-3 space-x-2">
 																			<Button
 																				variant="outline"
@@ -433,12 +466,27 @@ function DashboardContent() {
 																			</Button>
 																		</div>
 																	)}
+																{/* Show message if already surveyed */}
+																{appointment.status ===
+																	"completed" &&
+																	user.user_type ===
+																		"patient" &&
+																	surveyedAppointments.has(
+																		appointment.id
+																	) && (
+																		<div className="flex mt-3">
+																			<span className="text-sm text-green-600 font-medium">
+																				✅
+																				Atención
+																				evaluada
+																			</span>
+																		</div>
+																	)}
 																{appointment.status ===
 																	"scheduled" &&
 																	user.user_type ===
 																		"doctor" && (
-																		<div className="flex mt-3 space-x-2">
-																		</div>
+																		<div className="flex mt-3 space-x-2"></div>
 																	)}
 															</div>
 														</div>
