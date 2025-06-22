@@ -285,9 +285,7 @@ function DashboardContent() {
 					<Tabs value={activeTab} onValueChange={setActiveTab}>
 						<TabsList className="mb-4">
 							<TabsTrigger value="appointments">
-								{user.user_type === "patient"
-									? "Mis Turnos"
-									: "Mis Citas"}
+								{"Mis Turnos"}
 							</TabsTrigger>
 							<TabsTrigger value="schedule">
 								{user.user_type === "patient"
