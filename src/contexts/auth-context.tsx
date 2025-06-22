@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { useRouter } from "next/navigation";
 
 interface User {
@@ -61,16 +67,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Logout function with proper loading state
   const logout = async () => {
     setLoggingOut(true);
-    
+
     try {
       // Add a small delay to prevent flash
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
       localStorage.removeItem("token");
       setUser(null);
-      
+
       // Navigate to home page
-      router.push("/");
+      router.replace("/");
     } catch (error) {
       console.error("Error during logout:", error);
     } finally {
@@ -101,11 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loggingOut,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
