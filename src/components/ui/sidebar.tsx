@@ -9,7 +9,6 @@ import {
   MessageSquare,
   LogOut,
   Loader2,
-  BellIcon,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -60,14 +59,6 @@ export const getNavigationItems = (user: IUser | null) => {
         active: false,
       },
       ...baseItems.slice(1), // Chat
-      {
-        id: "notifications",
-        href: "/dashboard/notifications",
-        // icon CampaignIcon
-        icon: BellIcon,
-        label: "Notificaciones",
-        active: false,
-      },
     ];
   } else {
     return [
@@ -87,14 +78,6 @@ export const getNavigationItems = (user: IUser | null) => {
         active: false,
       },
       ...baseItems.slice(1), // Chat
-      {
-        id: "notifications",
-        href: "/dashboard/notifications",
-        // icon CampaignIcon
-        icon: BellIcon,
-        label: "Notificaciones",
-        active: false,
-      },
     ];
   }
 };
