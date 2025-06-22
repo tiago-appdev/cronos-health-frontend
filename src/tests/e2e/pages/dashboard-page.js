@@ -1,84 +1,43 @@
-import { BasePage } from "./base-page.js";
-import { expect } from "@playwright/test";
+import { BasePage } from './base-page.js';
+import { SELECTORS } from '../test-data.js';
 
 export class DashboardPage extends BasePage {
-	constructor(page) {
-		super(page);
+  constructor(page) {
+    super(page);
+  }
 
-		// Locators
-		this.welcomeMessage = page.locator('h2:has-text("Bienvenido")');
-		this.userAvatar = page.locator('[data-testid="user-avatar"], .avatar');
-		this.logoutButton = page.locator(
-			'[data-testid="logout-button"], button:has-text("Cerrar Sesión")'
-		);
+  async gotoDashboard() {
+    await this.goto('/dashboard');
+    await this.waitForElement(SELECTORS.dashboard.welcomeMessage);
+  }
 
-		// Tabs
-		this.appointmentsTab = page.locator(
-			'[data-testid="appointments-tab"], button:has-text("Mis Turnos"), button:has-text("Mis Citas")'
-		);
-		this.scheduleTab = page.locator(
-			'[data-testid="schedule-tab"], button:has-text("Agendar Turno"), button:has-text("Programar Cita")'
-		).first();
+  async expectWelcomeMessage(userName) {
+    await this.expectToContainText(`Bienvenido, ${userName}`);
+  }
 
-		// Appointments
-		this.appointmentsList = page.locator(
-			'[data-testid="appointments-list"]'
-		);
-		this.appointmentCard = page.locator(
-			'[data-testid="appointment-card"], .border.rounded-lg'
-		);
-		this.cancelButton = page.locator(
-			'[data-testid="cancel-button"], button:has-text("Cancelar")'
-		);
-		this.rescheduleButton = page.locator(
-			'[data-testid="reschedule-button"], button:has-text("Reprogramar")'
-		);
+  async goToAppointments() {
+    await this.clickAndWait(SELECTORS.dashboard.appointmentsTab);
+  }
 
-		// Empty state
-		this.emptyState = page.locator(
-			'text="No tienes turnos programados", text="No tienes citas programadas"'
-		);
-		this.bookAppointmentButton = page.locator(
-			'button:has-text("Agendar Turno"), button:has-text("Programar Cita")'
-		);
+  async goToScheduleAppointment() {
+    await this.clickAndWait(SELECTORS.dashboard.scheduleTab);
+  }
 
-		// Navigation
-		this.sidebar = page.locator(
-			'[data-testid="sidebar"], .fixed.inset-y-0'
-		);
-		this.profileLink = page.locator('a:has-text("Mi Perfil")');
-		this.historyLink = page.locator('a:has-text("Historial")');
-	}
+  async goToMedicalHistory() {
+    await this.clickAndWait(SELECTORS.dashboard.medicalHistoryTab);
+  }
 
-	async goto() {
-		await super.goto("/dashboard");
-	}
+  async hasAppointments() {
+    try {
+      await this.waitForElement('text=Próximos Turnos', { timeout: 5000 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
 
-	async expectWelcome(userName) {
-		await expect(this.welcomeMessage).toContainText(
-			`Bienvenido, ${userName}`
-		);
-	}
-
-	async logout() {
-		await this.logoutButton.click();
-	}
-
-	async switchToScheduleTab() {
-		await this.scheduleTab.click();
-	}
-
-	async getAppointmentCount() {
-		return await this.appointmentCard.count();
-	}
-
-	async cancelFirstAppointment() {
-		await this.cancelButton.first().click();
-	}
-
-	async expectAppointment(doctorName) {
-		await expect(
-			this.appointmentCard.filter({ hasText: doctorName })
-		).toBeVisible();
-	}
+  async getAppointmentCount() {
+    const appointments = await this.page.locator('[data-testid="appointment-card"]').count();
+    return appointments;
+  }
 }

@@ -44,3 +44,4 @@ package-lock.json
 /test-results/
 /playwright-report/
 src/tests/README.md
+src/tests/e2e/test-results/junit.xml
