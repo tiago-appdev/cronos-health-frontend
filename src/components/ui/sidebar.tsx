@@ -7,15 +7,98 @@ import {
   User,
   FileText,
   MessageSquare,
-  Settings,
   LogOut,
   Loader2,
+  BellIcon,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import { ar } from "date-fns/locale";
 
 interface SidebarProps {
-  currentPage: string; // 'dashboard' | 'profile' | 'history' | 'medical-panel' | 'chat' | 'notifications' | 'settings'
+  currentPage: string; // 'dashboard' | 'profile' | 'history' | 'medical-panel' | 'chat' | 'notifications'
 }
+
+interface IUser {
+  id: string;
+  name: string;
+  email: string;
+  user_type: "patient" | "doctor" | "admin";
+}
+
+// Navigation items based on user type
+export const getNavigationItems = (user: IUser | null) => {
+  const baseItems = [
+    {
+      id: "profile",
+      href: "/dashboard/profile",
+      icon: User,
+      label: "Mi Perfil",
+      active: true,
+    },
+    {
+      id: "chat",
+      href: "/dashboard/chat",
+      icon: MessageSquare,
+      label: "Chat",
+      active: false,
+    },
+  ];
+  if (user?.user_type === "patient") {
+    return [
+      {
+        id: "dashboard",
+        href: "/dashboard",
+        icon: CalendarIcon,
+        label: "Mis Turnos",
+        active: false,
+      },
+      ...baseItems.slice(0, 1), // Profile
+      {
+        id: "history",
+        href: "/dashboard/history",
+        icon: FileText,
+        label: "Historial Médico",
+        active: false,
+      },
+      ...baseItems.slice(1), // Chat
+      {
+        id: "notifications",
+        href: "/dashboard/notifications",
+        // icon CampaignIcon
+        icon: BellIcon,
+        label: "Notificaciones",
+        active: false,
+      },
+    ];
+  } else {
+    return [
+      {
+        id: "dashboard",
+        href: "/dashboard",
+        icon: CalendarIcon,
+        label: "Agenda",
+        active: false,
+      },
+      ...baseItems.slice(0, 1), // Profile
+      {
+        id: "medical-panel",
+        href: "/dashboard/medical-panel",
+        icon: FileText,
+        label: "Historial de Pacientes",
+        active: false,
+      },
+      ...baseItems.slice(1), // Chat
+      {
+        id: "notifications",
+        href: "/dashboard/notifications",
+        // icon CampaignIcon
+        icon: BellIcon,
+        label: "Notificaciones",
+        active: false,
+      },
+    ];
+  }
+};
 
 export function Sidebar({ currentPage }: SidebarProps) {
   const { user, logout, loggingOut } = useAuth();
@@ -34,64 +117,12 @@ export function Sidebar({ currentPage }: SidebarProps) {
   const getUserTypeDisplay = (userType: string) => {
     return userType === "patient" ? "Paciente" : "Médico";
   };
-  // Navigation items based on user type
-  const getNavigationItems = () => {
-    const baseItems = [
-      {
-        id: "profile",
-        href: "/dashboard/profile",
-        icon: User,
-        label: "Mi Perfil",
-      },
-      {
-        id: "chat",
-        href: "/dashboard/chat",
-        icon: MessageSquare,
-        label: "Chat",
-      },
-    ];
-    if (user?.user_type === "patient") {
-      return [
-        {
-          id: "dashboard",
-          href: "/dashboard",
-          icon: CalendarIcon,
-          label: "Mis Turnos",
-        },
-        ...baseItems.slice(0, 1), // Profile
-        {
-          id: "history",
-          href: "/dashboard/history",
-          icon: FileText,
-          label: "Historial Médico",
-        },
-        ...baseItems.slice(1), // Chat, Settings
-      ];
-    } else {
-      return [
-        {
-          id: "dashboard",
-          href: "/dashboard",
-          icon: CalendarIcon,
-          label: "Mis Citas",
-        },
-        ...baseItems.slice(0, 1), // Profile
-        {
-          id: "medical-panel",
-          href: "/dashboard/medical-panel",
-          icon: FileText,
-          label: "Historial de Pacientes",
-        },
-        ...baseItems.slice(1), // Chat, Settings
-      ];
-    }
-  };
 
-  const navigationItems = getNavigationItems();
+  const navigationItems = getNavigationItems(user);
 
   const handleLogout = async () => {
     if (!loggingOut) {
-      await logout();
+      logout();
     }
   };
 
