@@ -38,56 +38,51 @@ export function Sidebar({ currentPage }: SidebarProps) {
   const getNavigationItems = () => {
     const baseItems = [
       {
-        id: 'profile',
-        href: '/dashboard/profile',
+        id: "profile",
+        href: "/dashboard/profile",
         icon: User,
-        label: 'Mi Perfil'
+        label: "Mi Perfil",
       },
       {
-        id: 'chat',
-        href: '/dashboard/chat',
+        id: "chat",
+        href: "/dashboard/chat",
         icon: MessageSquare,
-        label: 'Chat'
+        label: "Chat",
       },
-      {
-        id: 'settings',
-        href: '/dashboard/settings',
-        icon: Settings,
-        label: 'Configuración'
-      }
-    ];    if (user?.user_type === "patient") {
+    ];
+    if (user?.user_type === "patient") {
       return [
         {
-          id: 'dashboard',
-          href: '/dashboard',
+          id: "dashboard",
+          href: "/dashboard",
           icon: CalendarIcon,
-          label: 'Mis Turnos'
+          label: "Mis Turnos",
         },
         ...baseItems.slice(0, 1), // Profile
         {
-          id: 'history',
-          href: '/dashboard/history',
+          id: "history",
+          href: "/dashboard/history",
           icon: FileText,
-          label: 'Historial Médico'
+          label: "Historial Médico",
         },
-        ...baseItems.slice(1) // Chat, Settings
+        ...baseItems.slice(1), // Chat, Settings
       ];
     } else {
       return [
         {
-          id: 'dashboard',
-          href: '/dashboard',
+          id: "dashboard",
+          href: "/dashboard",
           icon: CalendarIcon,
-          label: 'Mis Citas'
+          label: "Mis Citas",
         },
         ...baseItems.slice(0, 1), // Profile
         {
-          id: 'medical-panel',
-          href: '/dashboard/medical-panel',
+          id: "medical-panel",
+          href: "/dashboard/medical-panel",
           icon: FileText,
-          label: 'Historial de Pacientes'
+          label: "Historial de Pacientes",
         },
-        ...baseItems.slice(1) // Chat, Settings
+        ...baseItems.slice(1), // Chat, Settings
       ];
     }
   };
@@ -106,7 +101,9 @@ export function Sidebar({ currentPage }: SidebarProps) {
       <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
-          <p className="text-lg font-medium text-gray-700">Cerrando sesión...</p>
+          <p className="text-lg font-medium text-gray-700">
+            Cerrando sesión...
+          </p>
         </div>
       </div>
     );
@@ -130,13 +127,13 @@ export function Sidebar({ currentPage }: SidebarProps) {
           >
             <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
           </svg>
-          <span className="text-xl font-bold text-teal-600">
-            Cronos Health
-          </span>
+          <span className="text-xl font-bold text-teal-600">Cronos Health</span>
         </Link>
       </div>
-      
-      <div className="flex flex-col flex-1 overflow-y-auto">        <div className="flex items-center p-4 border-b">
+
+      <div className="flex flex-col flex-1 overflow-y-auto">
+        {" "}
+        <div className="flex items-center p-4 border-b">
           <Avatar className="h-10 w-10 mr-3">
             <AvatarImage
               src="/placeholder.svg?height=40&width=40"
@@ -154,12 +151,11 @@ export function Sidebar({ currentPage }: SidebarProps) {
           </div>
           <NotificationCenter />
         </div>
-        
         <nav className="flex-1 p-4 space-y-1">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id;
-            
+
             return (
               <Link
                 key={item.id}
@@ -176,7 +172,6 @@ export function Sidebar({ currentPage }: SidebarProps) {
             );
           })}
         </nav>
-        
         <div className="p-4 border-t">
           <Button
             variant="ghost"
