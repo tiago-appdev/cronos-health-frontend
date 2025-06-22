@@ -7,10 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug"
+    "test:e2e": "playwright test --config=src/tests/e2e/playwright.config.js",
+    "test:e2e:ui": "playwright test --config=src/tests/e2e/playwright.config.js --ui",
+    "test:e2e:headed": "playwright test --config=src/tests/e2e/playwright.config.js --headed",
+    "test:e2e:debug": "playwright test --config=src/tests/e2e/playwright.config.js --debug",
+    "test:e2e:auth": "playwright test --config=src/tests/e2e/playwright.config.js auth.spec.js",
+    "test:e2e:patient": "playwright test --config=src/tests/e2e/playwright.config.js patient.spec.js",
+    "test:e2e:doctor": "playwright test --config=src/tests/e2e/playwright.config.js doctor.spec.js",
+    "test:e2e:admin": "playwright test --config=src/tests/e2e/playwright.config.js admin.spec.js",
+    "test:e2e:integration": "playwright test --config=src/tests/e2e/playwright.config.js integration.spec.js"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

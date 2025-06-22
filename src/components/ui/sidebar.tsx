@@ -12,7 +12,6 @@ import {
   BellIcon,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
-import { ar } from "date-fns/locale";
 
 interface SidebarProps {
   currentPage: string; // 'dashboard' | 'profile' | 'history' | 'medical-panel' | 'chat' | 'notifications'

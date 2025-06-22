@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, act } from "react";
-import Link from "next/link";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,14 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Sidebar } from "@/components/ui/sidebar";
 import {
-  CalendarIcon,
-  User,
-  FileText,
-  MessageSquare,
-  Bell,
-  Settings,
-  LogOut,
   Loader2,
   Edit,
   Save,
@@ -36,12 +29,9 @@ import {
   Shield,
   Calendar,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { profileApi } from "@/lib/api-medical-records";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/components/ui/toast-context";
-import { getNavigationItems } from "@/components/ui/sidebar";
-import { NotificationCenter } from "@/components/ui/notification-center";
 
 interface PatientProfile {
   id: number;
@@ -71,7 +61,6 @@ interface DoctorProfile {
 type UserProfile = PatientProfile | DoctorProfile;
 
 export default function ProfilePage() {
-  const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -88,8 +77,7 @@ export default function ProfilePage() {
         year: "numeric",
         month: "long",
         day: "numeric",
-      });
-    } catch (error) {
+      });    } catch {
       return "Fecha no disponible";
     }
   };
@@ -107,8 +95,7 @@ export default function ProfilePage() {
       ) {
         age--;
       }
-      return age;
-    } catch (error) {
+      return age;    } catch {
       return 0;
     }
   };
@@ -185,167 +172,11 @@ export default function ProfilePage() {
   // Cancel editing
   const handleCancelEdit = () => {
     setEditedProfile(profile);
-    setEditing(false);
-  };
-
-  // Get navigation items based on user type
-  // const getNavigationItems = () => {
-  //   const baseItems = [
-  //     {
-  //       id: "profile",
-  //       href: "/dashboard/profile",
-  //       icon: User,
-  //       label: "Mi Perfil",
-  //       active: true,
-  //     },
-  //     {
-  //       id: "chat",
-  //       href: "/dashboard/chat",
-  //       icon: MessageSquare,
-  //       label: "Chat",
-  //       active: false,
-  //     },
-  //   ];
-
-  //   if (profile?.user_type === "doctor") {
-  //     return [
-  //       {
-  //         href: "/dashboard",
-  //         icon: CalendarIcon,
-  //         label: "Agenda",
-  //         active: false,
-  //       },
-  //       ...baseItems.slice(0, 1), // Profile,
-  //       {
-  //         href: "/dashboard/medical-panel",
-  //         icon: FileText,
-  //         label: "Historial de Pacientes",
-  //         active: false,
-  //       },
-  //       ...baseItems.slice(1), // Chat
-  //     ];
-  //   } else {
-  //     return [
-  //       {
-  //         href: "/dashboard",
-  //         icon: CalendarIcon,
-  //         label: "Mis Turnos",
-  //         active: false,
-  //       },
-  //       {
-  //         href: "/dashboard/profile",
-  //         icon: User,
-  //         label: "Mi Perfil",
-  //         active: true,
-  //       },
-  //       {
-  //         href: "/dashboard/history",
-  //         icon: FileText,
-  //         label: "Historial Médico",
-  //         active: false,
-  //       },
-  //       {
-  //         href: "/dashboard/chat",
-  //         icon: MessageSquare,
-  //         label: "Chat",
-  //         active: false,
-  //       },
-  //       {
-  //         href: "/dashboard/notifications",
-  //         icon: Bell,
-  //         label: "Notificaciones",
-  //         active: false,
-  //       },
-  //       {
-  //         href: "/dashboard/settings",
-  //         icon: Settings,
-  //         label: "Configuración",
-  //         active: false,
-  //       },
-  //     ];
-  //   }
-  // };
-
-  const navigationItems = getNavigationItems(user);
+    setEditing(false);  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="hidden md:flex w-64 flex-col fixed inset-y-0 bg-white border-r">
-        <div className="flex items-center h-16 px-4 border-b">
-          <Link href="/" className="flex items-center space-x-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-teal-600"
-            >
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-            <span className="text-xl font-bold text-teal-600">
-              Cronos Health
-            </span>
-          </Link>
-        </div>
-        <div className="flex flex-col flex-1 overflow-y-auto">
-          <div className="flex items-center p-4 border-b">
-            <Avatar className="h-10 w-10 mr-3">
-              <AvatarImage
-                src="/placeholder.svg?height=40&width=40"
-                alt="Avatar"
-              />
-              <AvatarFallback>
-                {profile?.name
-                  ?.split(" ")
-                  .map((n) => n[0])
-                  .join("") || "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <p className="font-medium">{profile?.name || "Usuario"}</p>
-              <p className="text-sm text-gray-500">
-                {profile?.user_type === "doctor" ? "Médico" : "Paciente"}
-              </p>
-            </div>
-            <NotificationCenter />
-          </div>
-          <nav className="flex-1 p-4 space-y-1">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center p-2 rounded-md ${
-                    item.active
-                      ? "bg-gray-100 text-teal-600 font-medium"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  <Icon className="mr-3 h-5 w-5" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="p-4 border-t">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-gray-600"
-              onClick={() => router.push("/login")}
-            >
-              <LogOut className="mr-3 h-5 w-5" />
-              Cerrar Sesión
-            </Button>
-          </div>
-        </div>
-      </div>
+      <Sidebar currentPage="profile" />
 
       {/* Main content */}
       <div className="flex-1 md:ml-64">
