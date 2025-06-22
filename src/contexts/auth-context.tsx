@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useRouter } from "next/navigation";
 
 interface User {
   id: string;
@@ -15,6 +16,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
+  loggingOut: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +24,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const router = useRouter();
 
   // Function to fetch user data from token
   const fetchUserFromToken = async (token: string): Promise<User | null> => {
@@ -54,10 +58,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return userData;
   };
 
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
+  // Logout function with proper loading state
+  const logout = async () => {
+    setLoggingOut(true);
+    
+    try {
+      // Add a small delay to prevent flash
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      localStorage.removeItem("token");
+      setUser(null);
+      
+      // Navigate to home page
+      router.push("/");
+    } catch (error) {
+      console.error("Error during logout:", error);
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   // Check for existing token on mount
@@ -80,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     isAuthenticated: !!user,
     loading,
+    loggingOut,
   };
 
   return (
