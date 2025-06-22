@@ -78,7 +78,7 @@ export function Sidebar({ currentPage }: SidebarProps) {
           id: 'dashboard',
           href: '/dashboard',
           icon: CalendarIcon,
-          label: 'Mis Citas'
+          label: 'Mis Turnos'
         },
         ...baseItems.slice(0, 1), // Profile
         {
