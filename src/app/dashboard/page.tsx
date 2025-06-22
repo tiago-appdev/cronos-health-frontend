@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,19 +12,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   CalendarIcon,
   Clock,
-  User,
-  FileText,
-  MessageSquare,
-  Bell,
-  Settings,
-  LogOut,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { ProtectedRoute } from "@/components/protected-route";
+import { Sidebar } from "@/components/ui/sidebar";
 import { AppointmentBookingForm } from "@/components/ui/appointment-booking-form";
 import { useToast } from "@/components/ui/toast-context";
 
@@ -40,22 +33,12 @@ interface Appointment {
 }
 
 function DashboardContent() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("appointments");
-
-  // Get user initials for avatar
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word.charAt(0))
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   // Format user type for display
   const getUserTypeDisplay = (userType: string) => {
@@ -132,109 +115,8 @@ function DashboardContent() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="hidden md:flex w-64 flex-col fixed inset-y-0 bg-white border-r">
-        <div className="flex items-center h-16 px-4 border-b">
-          <Link href="/" className="flex items-center space-x-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-teal-600"
-            >
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-            <span className="text-xl font-bold text-teal-600">
-              Cronos Health
-            </span>
-          </Link>
-        </div>
-        <div className="flex flex-col flex-1 overflow-y-auto">
-          <div className="flex items-center p-4 border-b">
-            <Avatar className="h-10 w-10 mr-3">
-              <AvatarImage
-                src="/placeholder.svg?height=40&width=40"
-                alt="Avatar"
-              />
-              <AvatarFallback className="bg-teal-100 text-teal-700">
-                {getInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium">{user.name}</p>
-              <p className="text-sm text-gray-500">
-                {getUserTypeDisplay(user.user_type)}
-              </p>
-            </div>
-          </div>
-          <nav className="flex-1 p-4 space-y-1">
-            <Link
-              href="/dashboard"
-              className="flex items-center p-2 rounded-md bg-gray-100 text-teal-600 font-medium"
-            >
-              <CalendarIcon className="mr-3 h-5 w-5" />
-              {user.user_type === "patient" ? "Mis Turnos" : "Mis Citas"}
-            </Link>
-            <Link
-              href="/dashboard/profile"
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <User className="mr-3 h-5 w-5" />
-              Mi Perfil
-            </Link>
-            <Link
-              href={
-                user.user_type === "patient"
-                  ? "/dashboard/history"
-                  : "/dashboard/medical-panel"
-              }
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <FileText className="mr-3 h-5 w-5" />
-              {user.user_type === "patient"
-                ? "Historial Médico"
-                : "Historial de Pacientes"}
-            </Link>
-            <Link
-              href="/dashboard/chat"
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <MessageSquare className="mr-3 h-5 w-5" />
-              Chat
-            </Link>
-            <Link
-              href="/dashboard/notifications"
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <Bell className="mr-3 h-5 w-5" />
-              Notificaciones
-            </Link>
-            <Link
-              href="/dashboard/settings"
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <Settings className="mr-3 h-5 w-5" />
-              Configuración
-            </Link>
-          </nav>
-          <div className="p-4 border-t">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-gray-600"
-              onClick={logout}
-            >
-              <LogOut className="mr-3 h-5 w-5" />
-              Cerrar Sesión
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* Use shared sidebar */}
+      <Sidebar currentPage="dashboard" />
 
       {/* Main content */}
       <div className="flex-1 md:ml-64">

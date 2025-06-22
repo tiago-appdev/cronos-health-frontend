@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,23 +12,20 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  CalendarIcon,
-  FileText,
-  MessageSquare,
-  Bell,
-  Settings,
-  LogOut,
   Search,
   Plus,
   Edit,
   Loader2,
+  FileText,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { appointmentsApi, medicalRecordsApi } from "@/services/api";
 import { useToast } from "@/components/ui/toast-context";
 import { useAuth } from "@/contexts/auth-context";
+import { Sidebar } from "@/components/ui/sidebar";
+import { ProtectedRoute } from "@/components/protected-route";
 
 interface Patient {
   id: string;
@@ -76,10 +72,22 @@ interface PatientNote {
   createdAt: string;
 }
 
-export default function MedicalPanelPage() {
+function MedicalPanelContent() {
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+
+  // Redirect patients away from this page
+  useEffect(() => {
+    if (user && user.user_type === "patient") {
+      toast({
+        title: "Acceso Denegado",
+        description: "Esta página es solo para médicos",
+        type: "error",
+      });
+      router.push("/dashboard");
+    }
+  }, [user, router, toast]);
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
@@ -235,92 +243,8 @@ export default function MedicalPanelPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="hidden md:flex w-64 flex-col fixed inset-y-0 bg-white border-r">
-        <div className="flex items-center h-16 px-4 border-b">
-          <Link href="/" className="flex items-center space-x-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-teal-600"
-            >
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-            <span className="text-xl font-bold text-teal-600">
-              Cronos Health
-            </span>
-          </Link>
-        </div>
-        <div className="flex flex-col flex-1 overflow-y-auto">
-          <div className="flex items-center p-4 border-b">
-            <Avatar className="h-10 w-10 mr-3">
-              <AvatarImage
-                src="/placeholder.svg?height=40&width=40"
-                alt="Avatar"
-              />
-              <AvatarFallback>DG</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium">Dr. {user?.name}</p>
-              <p className="text-sm text-gray-500">Médico</p>
-            </div>
-          </div>
-          <nav className="flex-1 p-4 space-y-1">
-            <Link
-              href="/dashboard"
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <CalendarIcon className="mr-3 h-5 w-5" />
-              Agenda
-            </Link>
-            <Link
-              href="/dashboard/medical-panel"
-              className="flex items-center p-2 rounded-md bg-gray-100 text-teal-600 font-medium"
-            >
-              <FileText className="mr-3 h-5 w-5" />
-              Historial Clínico
-            </Link>
-            <Link
-              href="/dashboard/chat"
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <MessageSquare className="mr-3 h-5 w-5" />
-              Chat
-            </Link>
-            <Link
-              href="/dashboard/notifications"
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <Bell className="mr-3 h-5 w-5" />
-              Notificaciones
-            </Link>
-            <Link
-              href="/dashboard/settings"
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <Settings className="mr-3 h-5 w-5" />
-              Configuración
-            </Link>
-          </nav>
-          <div className="p-4 border-t">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-gray-600"
-              onClick={() => router.push("/login")}
-            >
-              <LogOut className="mr-3 h-5 w-5" />
-              Cerrar Sesión
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* Use shared sidebar */}
+      <Sidebar currentPage="medical-panel" />
 
       {/* Main content */}
       <div className="flex-1 md:ml-64">
@@ -641,5 +565,13 @@ export default function MedicalPanelPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function MedicalPanelPage() {
+  return (
+    <ProtectedRoute requireAuth={true} allowedUserTypes={["doctor", "admin"]}>
+      <MedicalPanelContent />
+    </ProtectedRoute>
   );
 }

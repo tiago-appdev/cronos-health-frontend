@@ -1,28 +1,21 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  CalendarIcon,
-  User,
-  FileText,
-  MessageSquare,
-  Bell,
-  Settings,
-  LogOut,
   Send,
   Search,
   MoreVertical,
   Paperclip,
   Plus,
+  MessageSquare,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { messagesApi } from "@/services/api";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/components/ui/toast-context";
+import { Sidebar } from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface Conversation {
   id: string;
@@ -63,7 +56,6 @@ interface User {
 
 export default function ChatPage() {
   const { user } = useAuth();
-  const router = useRouter();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -275,95 +267,8 @@ export default function ChatPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="hidden md:flex w-64 flex-col fixed inset-y-0 bg-white border-r">
-        <div className="flex items-center h-16 px-4 border-b">
-          <Link href="/" className="flex items-center space-x-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-teal-600"
-            >
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-            <span className="text-xl font-bold text-teal-600">Cronos Health</span>
-          </Link>
-        </div>
-        <div className="flex flex-col flex-1 overflow-y-auto">
-          <div className="flex items-center p-4 border-b">
-            <Avatar className="h-10 w-10 mr-3">
-              <AvatarImage src="/placeholder.svg?height=40&width=40" alt="Avatar" />
-              <AvatarFallback className="bg-teal-100 text-teal-700">
-                {user ? getInitials(user.name) : "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium">{user?.name}</p>
-              <p className="text-sm text-gray-500">
-                {user?.user_type === "patient" ? "Paciente" : "Médico"}
-              </p>
-            </div>
-          </div>
-          <nav className="flex-1 p-4 space-y-1">
-            <Link href="/dashboard" className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100">
-              <CalendarIcon className="mr-3 h-5 w-5" />
-              {user?.user_type === "patient" ? "Mis Turnos" : "Agenda"}
-            </Link>
-            <Link
-              href="/dashboard/profile"
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <User className="mr-3 h-5 w-5" />
-              Mi Perfil
-            </Link>
-            <Link
-              href="/dashboard/medical-panel"
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <FileText className="mr-3 h-5 w-5" />
-              {user?.user_type === "patient" ? "Historial Médico" : "Pacientes"}
-            </Link>
-            <Link
-              href="/dashboard/chat"
-              className="flex items-center p-2 rounded-md bg-gray-100 text-teal-600 font-medium"
-            >
-              <MessageSquare className="mr-3 h-5 w-5" />
-              Chat
-            </Link>
-            <Link
-              href="/dashboard/notifications"
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <Bell className="mr-3 h-5 w-5" />
-              Notificaciones
-            </Link>
-            <Link
-              href="/dashboard/settings"
-              className="flex items-center p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            >
-              <Settings className="mr-3 h-5 w-5" />
-              Configuración
-            </Link>
-          </nav>
-          <div className="p-4 border-t">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-gray-600"
-              onClick={() => router.push("/login")}
-            >
-              <LogOut className="mr-3 h-5 w-5" />
-              Cerrar Sesión
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* Use shared sidebar */}
+      <Sidebar currentPage="chat" />
 
       {/* Main content */}
       <div className="flex-1 md:ml-64">
