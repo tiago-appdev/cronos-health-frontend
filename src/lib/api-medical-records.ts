@@ -180,6 +180,21 @@ export const authApi = {
   },
 };
 
+// Profile API
+export const profileApi = {
+  // Get user profile
+  getProfile: async () => {
+    const response = await api.get("/profile/me");
+    return response.data;
+  },
+
+  // Update user profile
+  updateProfile: async (data: any) => {
+    const response = await api.put("/profile/me", data);
+    return response.data;
+  },
+};
+
 // Admin API to get doctor information
 export const adminApi = {
   // Get user by ID (includes doctor profile)
