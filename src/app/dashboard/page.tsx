@@ -20,6 +20,7 @@ import { AppointmentBookingForm } from "@/components/ui/appointment-booking-form
 import { SurveyNotification } from "@/components/ui/survey-notification";
 import { useSurvey } from "@/contexts/survey-context";
 import { useToast } from "@/components/ui/toast-context";
+import { appointmentApi } from "@/services/api";
 
 interface Appointment {
   fullDate: string | number | Date;
@@ -36,10 +37,11 @@ interface Appointment {
 function DashboardContent() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { showSurveyToast } = useSurvey();
-  const [date, setDate] = useState<Date | undefined>(new Date());  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const { showSurveyToast } = useSurvey();  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("appointments");
+  const [surveyedAppointments, setSurveyedAppointments] = useState<Set<number>>(new Set());
 
   // Sort appointments by date and time
   const sortedAppointments = useMemo(() => {
@@ -211,10 +213,33 @@ function DashboardContent() {
       console.error("Error fetching appointments:", error);
       setLoading(false);
     }
-  };
-  useEffect(() => {
+  };  useEffect(() => {
     fetchAppointments();
   }, []);
+
+  // Fetch surveyed appointments for patients
+  useEffect(() => {
+    const fetchSurveyedAppointments = async () => {
+      if (user?.user_type !== "patient") return;
+      try {
+        const surveys = await appointmentApi.getMySurveys();
+        const surveyedIds = new Set<number>();
+        surveys.forEach((survey: { appointment_id?: number }) => {
+          if (typeof survey.appointment_id === "number") {
+            surveyedIds.add(survey.appointment_id);
+          }
+        });
+        setSurveyedAppointments(surveyedIds);
+      } catch (error) {
+        console.error("Error fetching surveyed appointments:", error);
+        // Don't show error toast, just fail silently for this feature
+      }
+    };
+
+    if (user) {
+      fetchSurveyedAppointments();
+    }
+  }, [user]);
 
   if (!user) {
     return (
@@ -408,10 +433,45 @@ function DashboardContent() {
 																				>
 																					Cancelar
 																				</Button>
-																			</>
-																		)}
+																			</>																		)}
 																	</div>
 																)}
+																{/* Survey evaluation for completed appointments */}
+																{appointment.status === "completed" &&
+																	user.user_type === "patient" &&
+																	!surveyedAppointments.has(appointment.id) && (
+																		<div className="flex mt-3 space-x-2">
+																			<Button
+																				variant="outline"
+																				size="sm"
+																				onClick={() => {
+																					// Redirect to survey with appointment data
+																					const surveyUrl = `/survey?appointmentId=${
+																						appointment.id
+																					}&doctorName=${encodeURIComponent(
+																						appointment.doctor
+																					)}&specialty=${encodeURIComponent(
+																						appointment.specialty
+																					)}&date=${encodeURIComponent(
+																						appointment.date
+																					)}`;
+																					window.location.href = surveyUrl;
+																				}}
+																			>
+																				📝 Evaluar Atención
+																			</Button>
+																		</div>
+																	)}
+																{/* Show message if already surveyed */}
+																{appointment.status === "completed" &&
+																	user.user_type === "patient" &&
+																	surveyedAppointments.has(appointment.id) && (
+																		<div className="flex mt-3">
+																			<span className="text-sm text-green-600 font-medium">
+																				✅ Atención evaluada
+																			</span>
+																		</div>
+																	)}
 															</div>
 														</div>
 													)
