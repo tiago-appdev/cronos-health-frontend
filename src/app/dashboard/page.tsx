@@ -12,7 +12,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Clock } from "lucide-react";
+import { CalendarIcon, Clock, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { ProtectedRoute } from "@/components/protected-route";
 import { Sidebar } from "@/components/ui/sidebar";
@@ -22,15 +22,15 @@ import { useSurvey } from "@/contexts/survey-context";
 import { useToast } from "@/components/ui/toast-context";
 
 interface Appointment {
-	fullDate: string | number | Date;
-	id: number;
-	doctor: string;
-	specialty: string;
-	patient?: string;
-	patientAge?: number;
-	date: string;
-	time: string;
-	status: string;
+  fullDate: string | number | Date;
+  id: number;
+  doctor: string;
+  specialty: string;
+  patient?: string;
+  patientAge?: number;
+  date: string;
+  time: string;
+  status: string;
 }
 
 function DashboardContent() {
@@ -217,7 +217,14 @@ function DashboardContent() {
   }, []);
 
   if (!user) {
-    return <div>Loading...</div>;
+    return (
+      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
+          <p className="text-lg font-medium text-gray-700">Saliendo...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
