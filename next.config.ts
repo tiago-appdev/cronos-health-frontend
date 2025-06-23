@@ -1,12 +1,25 @@
-import type { NextConfig } from "next";
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+	// Enable standalone output for better deployment
+	output: "standalone",
+	eslint: {
+		ignoreDuringBuilds: true,
+	},
 
-const nextConfig: NextConfig = {
-  /* config options here */
-  output: 'standalone',
- // This includes files from the monorepo base two directories up
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
+	// Optimize images
+	images: {
+		domains: ["localhost"],
+	},
+
+	// Environment variables
+	env: {
+		API_URL: process.env.NEXT_PUBLIC_API_URL,
+	},
+
+	// Disable telemetry in production
+	telemetry: {
+		disabled: true,
+	},
 };
 
-export default nextConfig;
+module.exports = nextConfig;
