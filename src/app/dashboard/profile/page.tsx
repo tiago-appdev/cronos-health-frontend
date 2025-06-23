@@ -77,7 +77,8 @@ export default function ProfilePage() {
         year: "numeric",
         month: "long",
         day: "numeric",
-      });    } catch {
+      });
+    } catch {
       return "Fecha no disponible";
     }
   };
@@ -95,7 +96,8 @@ export default function ProfilePage() {
       ) {
         age--;
       }
-      return age;    } catch {
+      return age;
+    } catch {
       return 0;
     }
   };
@@ -172,7 +174,8 @@ export default function ProfilePage() {
   // Cancel editing
   const handleCancelEdit = () => {
     setEditedProfile(profile);
-    setEditing(false);  };
+    setEditing(false);
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -223,10 +226,7 @@ export default function ProfilePage() {
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-6">
                     <Avatar className="h-24 w-24">
-                      <AvatarImage
-                        src="/placeholder.svg?height=96&width=96"
-                        alt="Avatar"
-                      />
+                      <AvatarImage src="/avatar.png" alt="Avatar" />
                       <AvatarFallback className="text-2xl">
                         {profile.name
                           .split(" ")

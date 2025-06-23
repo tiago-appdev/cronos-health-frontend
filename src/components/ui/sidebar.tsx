@@ -148,10 +148,7 @@ export function Sidebar({ currentPage }: SidebarProps) {
         {" "}
         <div className="flex items-center p-4 border-b">
           <Avatar className="h-10 w-10 mr-3">
-            <AvatarImage
-              src="/placeholder.svg?height=40&width=40"
-              alt="Avatar"
-            />
+            <AvatarImage src="/avatar.png" alt="Avatar" />
             <AvatarFallback className="bg-teal-100 text-teal-700">
               {user ? getInitials(user.name) : "U"}
             </AvatarFallback>
