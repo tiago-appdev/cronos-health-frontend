@@ -68,18 +68,18 @@ const ToastContainer = () => {
   const { toasts, dismiss } = useToast();
 
   if (toasts.length === 0) return null;
-
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 w-80">
+    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 w-80" data-testid="toast-container">
       {toasts.map((toast) => (
         <div
           key={toast.id}
+          data-testid={`toast-${toast.type}`}
           className={`rounded-md p-4 shadow-md transition-all duration-300 transform translate-x-0 ${getToastClassName(toast.type)}`}
         >
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="font-semibold">{toast.title}</h3>
-              {toast.description && <p className="text-sm mt-1">{toast.description}</p>}
+              <h3 className="font-semibold" data-testid="toast-title">{toast.title}</h3>
+              {toast.description && <p className="text-sm mt-1" data-testid="toast-description">{toast.description}</p>}
             </div>
             <button 
               onClick={() => dismiss(toast.id)} 

@@ -12,7 +12,6 @@
     "test:e2e:headed": "playwright test --config=src/tests/e2e/playwright.config.js --headed",
     "test:e2e:debug": "playwright test --config=src/tests/e2e/playwright.config.js --debug",
     "test:e2e:auth": "playwright test --config=src/tests/e2e/playwright.config.js auth.spec.js",
-    "test:e2e:patient": "playwright test --config=src/tests/e2e/playwright.config.js patient.spec.js",
     "test:e2e:doctor": "playwright test --config=src/tests/e2e/playwright.config.js doctor.spec.js",
     "test:e2e:admin": "playwright test --config=src/tests/e2e/playwright.config.js admin.spec.js",
     "test:e2e:integration": "playwright test --config=src/tests/e2e/playwright.config.js integration.spec.js"

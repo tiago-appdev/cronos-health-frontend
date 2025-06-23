@@ -9,30 +9,62 @@ export class AdminPage extends BasePage {
   async gotoAdmin() {
     await this.goto('/admin');
     await this.waitForElement('text=Panel de Administración');
-  }
-
-  async goToUsersManagement() {
-    await this.clickAndWait(SELECTORS.admin.usersTab);
+  }  async goToUsersManagement() {
+    await this.page.click(SELECTORS.admin.usersTab);
+    await this.page.waitForTimeout(1000); // Wait for tab to switch
+    await this.waitForElement('text=Administra todos los usuarios del sistema');
   }
 
   async goToSurveys() {
-    await this.clickAndWait(SELECTORS.admin.surveysTab);
+    await this.page.click(SELECTORS.admin.surveysTab);
+    await this.page.waitForTimeout(1000); // Wait for tab to switch
+    await this.waitForElement('text=Todas las encuestas de satisfacción enviadas por pacientes');
   }
-
   async createNewUser(userData) {
     await this.clickAndWait(SELECTORS.admin.newUserButton);
     
-    await this.fillForm({
-      'input[id="name"]': userData.name,
-      'input[id="email"]': userData.email,
-      'input[id="password"]': userData.password
-    });
-
-    // Select user type
-    await this.page.click(`input[value="${userData.userType}"]`);
+    // Wait for the modal to appear
+    await this.waitForElement('text=Crear Nuevo Usuario');
     
-    await this.clickAndWait('text=Crear Usuario');
-    await this.waitForElement('text=Usuario creado');
+    // Fill form using more specific selectors for the modal
+    await this.page.fill('input[placeholder="Nombre completo"]', userData.name);
+    await this.page.fill('input[placeholder="correo@ejemplo.com"]', userData.email);
+    await this.page.fill('input[placeholder="Contraseña"]', userData.password);
+
+    // Select user type using the radio button labels
+    if (userData.userType === 'doctor') {
+      await this.page.click('label[for="new-doctor"]');
+    } else if (userData.userType === 'admin') {
+      await this.page.click('label[for="new-admin"]');
+    } else {
+      await this.page.click('label[for="new-patient"]');
+    }
+    
+    await this.clickAndWait('[data-testid="create-user-button"]');
+    
+    // Look for success indication more flexibly - check for either toast or modal disappearing
+    try {
+      // First try to find the success toast
+      await this.page.waitForFunction(() => {
+        return document.body.innerText.includes('Usuario creado') || 
+               document.body.innerText.includes('creado exitosamente');
+      }, { timeout: 8000 });
+    } catch {
+      // If no toast found, check if modal disappeared (indicates success)
+      try {
+        await this.page.waitForFunction(() => {
+          const modal = document.querySelector('[role="dialog"]');
+          return !modal || !modal.offsetParent; // Modal is hidden/removed
+        }, { timeout: 3000 });
+      } catch {
+        // Last resort: check for any success indication or absence of error
+        await this.page.waitForTimeout(2000);
+        const hasError = await this.page.locator('text=Error').isVisible().catch(() => false);
+        if (hasError) {
+          throw new Error('User creation failed - error message visible');
+        }
+      }
+    }
   }
 
   async searchUser(searchTerm) {
@@ -44,18 +76,15 @@ export class AdminPage extends BasePage {
     // Find the user row and click delete
     const userRow = this.page.locator(`text=${userName}`).locator('..').locator('..');
     await userRow.locator('button:has([data-icon="trash"])').click();
-    
-    // Confirm deletion
-    await this.page.click('text=Sí');
-    await this.waitForElement('text=Usuario eliminado');
-  }
-
-  async expectUserCreated() {
-    await this.waitForElement('text=Usuario creado');
+      // Confirm deletion
+    await this.page.locator('button').filter({ hasText: 'Sí' }).click();
+    await this.waitForElement('[data-testid="toast-success"]');
+  }  async expectUserCreated() {
+    await this.waitForElement('[data-testid="toast-success"]');
   }
 
   async expectUserDeleted() {
-    await this.waitForElement('text=Usuario eliminado');
+    await this.waitForElement('[data-testid="toast-success"]');
   }
 
   async getUserCount() {

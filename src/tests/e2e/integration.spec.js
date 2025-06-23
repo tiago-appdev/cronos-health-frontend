@@ -23,28 +23,27 @@ test.describe('Integration Tests - Cross-User Workflows', () => {
     
     const doctorAuth = new AuthPage(doctorPage);
     const doctorDashboard = new DashboardPage(doctorPage);
-    const doctorAppointment = new AppointmentPage(doctorPage);
-    
-    try {
-      // Step 1: Patient schedules appointment
+    const doctorAppointment = new AppointmentPage(doctorPage);      try {
+      // Step 1: Patient schedules appointment - use random time to avoid conflicts
+      const randomTime = `${Math.floor(Math.random() * 10) + 8}:${Math.random() < 0.5 ? '00' : '30'}`;
       await patientAuth.login(TEST_USERS.patient.email, TEST_USERS.patient.password);
       await patientDashboard.gotoDashboard();
       await patientDashboard.goToScheduleAppointment();
-      await patientAppointment.scheduleAppointment('Dr. Gabriel Méndez');
+      await patientAppointment.scheduleAppointment(randomTime);
       await patientAppointment.expectAppointmentScheduled();
       
       // Step 2: Doctor completes the appointment
       await doctorAuth.login(TEST_USERS.doctor.email, TEST_USERS.doctor.password);
       await doctorDashboard.gotoDashboard();
       await doctorDashboard.goToAppointments();
-      
-      try {
+        try {
         await doctorAppointment.completeAppointment(0);
         
         // Step 3: Patient submits survey
         await patientSurvey.gotoSurvey();
         await patientSurvey.fillSurvey(TEST_DATA.survey);
         await patientSurvey.expectSurveySubmitted();
+        
         
       } catch (error) {
         console.log('No appointments to complete or survey workflow failed:', error.message);

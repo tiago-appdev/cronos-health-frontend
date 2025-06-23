@@ -227,14 +227,13 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
 			</CardHeader>
 			<CardContent>
 				<form onSubmit={handleSubmit} className="space-y-6">
-					{/* Doctor Selection */}
-					<div className="space-y-2">
+					{/* Doctor Selection */}					<div className="space-y-2">
 						<Label htmlFor="doctor">Seleccionar Médico</Label>
 						<Select
 							value={selectedDoctor}
 							onValueChange={setSelectedDoctor}
 						>
-							<SelectTrigger>
+							<SelectTrigger data-testid="doctor-select">
 								<SelectValue placeholder="Elige un médico" />
 							</SelectTrigger>
 							<SelectContent>
@@ -284,15 +283,14 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
 								/>
 							</PopoverContent>
 						</Popover>
-					</div>{" "}					{/* Time Selection */}
-					<div className="space-y-2">
+					</div>{" "}					{/* Time Selection */}					<div className="space-y-2">
 						<Label htmlFor="time">Seleccionar Hora</Label>
 						<Select
 							value={selectedTime}
 							onValueChange={setSelectedTime}
 							disabled={!selectedDate || !selectedDoctor}
 						>
-							<SelectTrigger>
+							<SelectTrigger data-testid="time-select">
 								<SelectValue
 									placeholder={
 										!selectedDate || !selectedDoctor
