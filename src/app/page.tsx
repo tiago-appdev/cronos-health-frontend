@@ -64,9 +64,7 @@ export default function Home() {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <span className="text-gray-700">
-                  Hola, {user?.name}
-                </span>
+                <span className="text-gray-700">Hola, {user?.name}</span>
                 <Link href="/dashboard">
                   <Button variant="outline">Dashboard</Button>
                 </Link>
@@ -125,7 +123,7 @@ export default function Home() {
             </div>
             <div className="flex justify-center items-center">
               <img
-                src="/placeholder.svg"
+                src="/placeholder.png"
                 alt="Cronos Health Platform"
                 className="rounded-lg shadow-lg"
                 width={500}
