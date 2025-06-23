@@ -24,13 +24,12 @@ test.describe('Integration Tests - Cross-User Workflows', () => {
     const doctorAuth = new AuthPage(doctorPage);
     const doctorDashboard = new DashboardPage(doctorPage);
     const doctorAppointment = new AppointmentPage(doctorPage);
-    
-    try {
+      try {
       // Step 1: Patient schedules appointment
       await patientAuth.login(TEST_USERS.patient.email, TEST_USERS.patient.password);
       await patientDashboard.gotoDashboard();
       await patientDashboard.goToScheduleAppointment();
-      await patientAppointment.scheduleAppointment('Dr. Gabriel Méndez');
+      await patientAppointment.scheduleAppointment('13:00');
       await patientAppointment.expectAppointmentScheduled();
       
       // Step 2: Doctor completes the appointment

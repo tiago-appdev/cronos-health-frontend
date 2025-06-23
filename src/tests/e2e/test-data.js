@@ -106,13 +106,12 @@ export const SELECTORS = {
     cancelButton: 'text=Cancelar',
     completeButton: 'text=Marcar Completada'
   },
-
   // Survey
   survey: {
-    ratingRadio: (rating) => `input[value="${rating}"]`,
-    recommendYes: 'input[value="yes"]',
-    recommendNo: 'input[value="no"]',
-    recommendMaybe: 'input[value="maybe"]',
+    ratingRadio: (rating) => `[data-testid="rating-${rating}"]`,
+    recommendYes: '[data-testid="recommend-yes"]',
+    recommendNo: '[data-testid="recommend-no"]',
+    recommendMaybe: '[data-testid="recommend-maybe"]',
     commentsTextarea: 'textarea',
     submitButton: 'text=Enviar',
     nextButton: 'text=Siguiente'

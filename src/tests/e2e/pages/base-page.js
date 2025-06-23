@@ -33,13 +33,13 @@ export class BasePage {
       await this.page.fill(selector, value);
     }
   }
-
   async expectToContainText(text) {
     await this.page.waitForFunction(
       text => document.body.innerText.includes(text),
       text
     );
   }
+
   async logout() {
     try {
       // Check if we're already logged out by looking for login elements
@@ -53,17 +53,22 @@ export class BasePage {
       const logoutButton = this.page.locator('text=Cerrar Sesión').first();
       if (await logoutButton.isVisible({ timeout: 2000 })) {
         await logoutButton.click();
-        // Wait for navigation with a reasonable timeout
-        await this.page.waitForURL('/', { timeout: 5000 });
+        // Wait for navigation with a more reasonable timeout and handle various scenarios
+        try {
+          await this.page.waitForURL('/login', { timeout: 5000 });        } catch {
+          // If not redirected to login, check if we're at root and then navigate
+          if (this.page.url().includes('localhost:3000/')) {
+            console.log('Logout successful but still on main page, navigating to home');
+            await this.page.goto('/');
+          } else {
+            console.warn('Logout navigation timeout, but may have succeeded');
+          }
+        }
       } else {
         console.warn('Logout button not found');
-        // Force navigation to home page
-        await this.page.goto('/');
       }
     } catch (error) {
       console.warn('Logout error:', error.message);
-      // Fallback: just navigate to home page
-      await this.page.goto('/');
     }
   }
 }

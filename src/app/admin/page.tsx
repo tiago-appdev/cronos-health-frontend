@@ -932,7 +932,7 @@ function AdminPageContent() {
                               <div className="text-sm text-gray-500">
                                 {formatDate(survey.created_at)}
                                 {survey.doctor_name && (
-                                  <span className="ml-2">• Dr. {survey.doctor_name}</span>
+                                  <span className="ml-2">• {survey.doctor_name}</span>
                                 )}
                                 {survey.doctor_specialty && (
                                   <span className="ml-1">({survey.doctor_specialty})</span>
@@ -1214,10 +1214,10 @@ function AdminPageContent() {
                       className="flex-1"
                     >
                       Cancelar
-                    </Button>
-                    <Button
+                    </Button>                    <Button
                       onClick={handleSaveNewUser}
                       className="flex-1"
+                      data-testid="create-user-button"
                       disabled={!newUserFormData.name || !newUserFormData.email || !newUserFormData.password}
                     >
                       <Save className="h-4 w-4 mr-2" />

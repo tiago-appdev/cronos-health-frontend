@@ -30,11 +30,11 @@ npm install
 # Iniciar el servidor de desarrollo
 npm run dev
 
-# Ejecutar tests E2E
-npm run test:e2e
+# Instalar Playwright
+npx playwright install
 
-# Ejecutar tests E2E en modo UI
-npm run test:e2e:ui
+# Ejecutar los tests E2E
+npm run test:e2e
 ```
 
 Abre el navegador en [http://localhost:3000](http://localhost:3000) para ver la app.

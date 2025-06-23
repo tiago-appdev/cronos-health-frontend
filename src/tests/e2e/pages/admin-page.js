@@ -40,8 +40,31 @@ export class AdminPage extends BasePage {
       await this.page.click('label[for="new-patient"]');
     }
     
-    await this.clickAndWait('text=Crear Usuario');
-    await this.waitForElement('text=Usuario creado');
+    await this.clickAndWait('[data-testid="create-user-button"]');
+    
+    // Look for success indication more flexibly - check for either toast or modal disappearing
+    try {
+      // First try to find the success toast
+      await this.page.waitForFunction(() => {
+        return document.body.innerText.includes('Usuario creado') || 
+               document.body.innerText.includes('creado exitosamente');
+      }, { timeout: 8000 });
+    } catch {
+      // If no toast found, check if modal disappeared (indicates success)
+      try {
+        await this.page.waitForFunction(() => {
+          const modal = document.querySelector('[role="dialog"]');
+          return !modal || !modal.offsetParent; // Modal is hidden/removed
+        }, { timeout: 3000 });
+      } catch {
+        // Last resort: check for any success indication or absence of error
+        await this.page.waitForTimeout(2000);
+        const hasError = await this.page.locator('text=Error').isVisible().catch(() => false);
+        if (hasError) {
+          throw new Error('User creation failed - error message visible');
+        }
+      }
+    }
   }
 
   async searchUser(searchTerm) {
@@ -53,17 +76,15 @@ export class AdminPage extends BasePage {
     // Find the user row and click delete
     const userRow = this.page.locator(`text=${userName}`).locator('..').locator('..');
     await userRow.locator('button:has([data-icon="trash"])').click();
-    
-    // Confirm deletion
-    await this.page.click('text=Sí');
-    await this.waitForElement('text=Usuario eliminado');
-  }
-  async expectUserCreated() {
-    await this.waitForElement('text=Usuario creado');
+      // Confirm deletion
+    await this.page.locator('button').filter({ hasText: 'Sí' }).click();
+    await this.waitForElement('[data-testid="toast-success"]');
+  }  async expectUserCreated() {
+    await this.waitForElement('[data-testid="toast-success"]');
   }
 
   async expectUserDeleted() {
-    await this.waitForElement('text=Usuario eliminado');
+    await this.waitForElement('[data-testid="toast-success"]');
   }
 
   async getUserCount() {

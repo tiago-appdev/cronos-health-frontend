@@ -195,10 +195,10 @@ function SurveyPageContent() {
 						<div
 							key={rating}
 							className="flex flex-col items-center"
-						>
-							<RadioGroupItem
+						>							<RadioGroupItem
 								value={rating.toString()}
 								id={`${label}-${rating}`}
+								data-testid={`${label.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-rating-${rating}`}
 							/>
 							<Label
 								htmlFor={`${label}-${rating}`}
@@ -430,12 +430,12 @@ function SurveyPageContent() {
 																	| "maybe"
 															)
 														}
-													>
-														<div className="flex space-x-4">
+													>														<div className="flex space-x-4">
 															<div className="flex items-center space-x-2">
 																<RadioGroupItem
 																	value="yes"
 																	id="yes"
+																	data-testid="recommend-yes"
 																/>
 																<Label htmlFor="yes">
 																	Sí
@@ -445,6 +445,7 @@ function SurveyPageContent() {
 																<RadioGroupItem
 																	value="no"
 																	id="no"
+																	data-testid="recommend-no"
 																/>
 																<Label htmlFor="no">
 																	No
@@ -454,6 +455,7 @@ function SurveyPageContent() {
 																<RadioGroupItem
 																	value="maybe"
 																	id="maybe"
+																	data-testid="recommend-maybe"
 																/>
 																<Label htmlFor="maybe">
 																	Tal vez

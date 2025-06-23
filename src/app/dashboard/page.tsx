@@ -20,7 +20,6 @@ import { AppointmentBookingForm } from "@/components/ui/appointment-booking-form
 import { SurveyNotification } from "@/components/ui/survey-notification";
 import { useSurvey } from "@/contexts/survey-context";
 import { useToast } from "@/components/ui/toast-context";
-import { appointmentApi } from "@/services/api";
 
 interface Appointment {
 	fullDate: string | number | Date;
@@ -38,13 +37,9 @@ function DashboardContent() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { showSurveyToast } = useSurvey();
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [date, setDate] = useState<Date | undefined>(new Date());  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("appointments");
-  const [surveyedAppointments, setSurveyedAppointments] = useState<Set<number>>(
-    new Set()
-  );
 
   // Sort appointments by date and time
   const sortedAppointments = useMemo(() => {
@@ -217,34 +212,9 @@ function DashboardContent() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchAppointments();
   }, []);
-
-  // Fetch surveyed appointments for patients
-  useEffect(() => {
-    const fetchSurveyedAppointments = async () => {
-      if (user?.user_type !== "patient") return;
-      try {
-        const surveys = await appointmentApi.getMySurveys();
-        const surveyedIds = new Set<number>();
-        surveys.forEach((survey: { appointment_id?: number }) => {
-          if (typeof survey.appointment_id === "number") {
-            surveyedIds.add(survey.appointment_id);
-          }
-        });
-        setSurveyedAppointments(surveyedIds);
-      } catch (error) {
-        console.error("Error fetching surveyed appointments:", error);
-        // Don't show error toast, just fail silently for this feature
-      }
-    };
-
-    if (user) {
-      fetchSurveyedAppointments();
-    }
-  }, [user]);
 
   if (!user) {
     return <div>Loading...</div>;
@@ -314,12 +284,12 @@ function DashboardContent() {
 												</p>
 											</div>
 										) : sortedAppointments.length > 0 ? (
-											<div className="space-y-4">
-												{sortedAppointments.map(
+											<div className="space-y-4">												{sortedAppointments.map(
 													(appointment) => (
 														<div
 															key={appointment.id}
 															className="flex items-start p-3 border rounded-lg"
+															data-testid="appointment-card"
 														>
 															<div className="mr-4 mt-1">
 																<CalendarIcon className="h-10 w-10 text-teal-600" />
@@ -329,7 +299,7 @@ function DashboardContent() {
 																	<h3 className="font-medium">
 																		{user.user_type ===
 																		"patient"
-																			? `Dr. ${appointment.doctor}`
+																			? `${appointment.doctor}`
 																			: appointment.patient}
 																	</h3>
 																	<Badge
