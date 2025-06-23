@@ -37,11 +37,14 @@ interface Appointment {
 function DashboardContent() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { showSurveyToast } = useSurvey();  const [date, setDate] = useState<Date | undefined>(new Date());
+  const { showSurveyToast } = useSurvey();
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("appointments");
-  const [surveyedAppointments, setSurveyedAppointments] = useState<Set<number>>(new Set());
+  const [surveyedAppointments, setSurveyedAppointments] = useState<Set<number>>(
+    new Set()
+  );
 
   // Sort appointments by date and time
   const sortedAppointments = useMemo(() => {
@@ -213,7 +216,8 @@ function DashboardContent() {
       console.error("Error fetching appointments:", error);
       setLoading(false);
     }
-  };  useEffect(() => {
+  };
+  useEffect(() => {
     fetchAppointments();
   }, []);
 
@@ -281,289 +285,250 @@ function DashboardContent() {
             </p>
           </div>
 
-					<Tabs value={activeTab} onValueChange={setActiveTab}>
-						<TabsList className="mb-4">
-							<TabsTrigger value="appointments">
-								{"Mis Turnos"}
-							</TabsTrigger>
-							<TabsTrigger value="schedule">
-								{user.user_type === "patient"
-									? "Agendar Turno"
-									: "Programar Cita"}
-							</TabsTrigger>
-						</TabsList>
-						<TabsContent value="appointments" className="space-y-4">
-							<div className="grid md:grid-cols-2 gap-4">
-								<Card>
-									<CardHeader className="pb-2">
-										<CardTitle>
-											{user.user_type === "patient"
-												? "Próximos Turnos"
-												: "Próximas Citas"}
-										</CardTitle>
-										<CardDescription>
-											{user.user_type === "patient"
-												? "Tus citas médicas programadas"
-												: "Citas programadas con pacientes"}
-										</CardDescription>
-									</CardHeader>
-									<CardContent>
-										{loading ? (
-											<div className="text-center py-6">
-												<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
-												<p className="text-gray-500 mt-2">
-													Cargando...
-												</p>
-											</div>
-										) : sortedAppointments.length > 0 ? (
-											<div className="space-y-4">												{sortedAppointments.map(
-													(appointment) => (
-														<div
-															key={appointment.id}
-															className="flex items-start p-3 border rounded-lg"
-															data-testid="appointment-card"
-														>
-															<div className="mr-4 mt-1">
-																<CalendarIcon className="h-10 w-10 text-teal-600" />
-															</div>
-															<div className="flex-1">
-																<div className="flex items-center justify-between mb-1">
-																	<h3 className="font-medium">
-																		{user.user_type ===
-																		"patient"
-																			? `${appointment.doctor}`
-																			: appointment.patient}
-																	</h3>
-																	<Badge
-																		variant={
-																			appointment.status ===
-																			"scheduled"
-																				? "default"
-																				: appointment.status ===
-																				  "completed"
-																				? "secondary"
-																				: "destructive"
-																		}
-																	>
-																		{appointment.status ===
-																		"scheduled"
-																			? "Programado"
-																			: appointment.status ===
-																			  "completed"
-																			? "Completado"
-																			: "Cancelado"}
-																	</Badge>
-																</div>
-																<p className="text-sm text-gray-500">
-																	{user.user_type ===
-																	"patient"
-																		? appointment.specialty
-																		: `Consulta${
-																				appointment.patientAge
-																					? ` - ${appointment.patientAge} años`
-																					: ""
-																		  }`}
-																</p>
-																<div className="flex items-center mt-2 text-sm text-gray-600">
-																	<CalendarIcon className="h-4 w-4 mr-1" />
-																	<span>
-																		{
-																			appointment.date
-																		}
-																	</span>
-																	<Clock className="h-4 w-4 ml-3 mr-1" />
-																	<span>
-																		{
-																			appointment.time
-																		}
-																	</span>
-																</div>
-																{appointment.status ===
-																	"scheduled" && (
-																	<div className="flex mt-3 space-x-2">
-																		{user.user_type ===
-																		"patient" ? (
-																			<>
-																				<Button
-																					variant="outline"
-																					size="sm"
-																				>
-																					Reprogramar
-																				</Button>
-																				<Button
-																					variant="destructive"
-																					size="sm"
-																					onClick={() =>
-																						handleCancelAppointment(
-																							appointment.id
-																						)
-																					}
-																				>
-																					Cancelar
-																				</Button>
-																			</>
-																		) : (
-																			<>
-																				<Button
-																					variant="default"
-																					size="sm"
-																					onClick={() =>
-																						handleCompleteAppointment(
-																							appointment.id
-																						)
-																					}
-																				>
-																					Marcar
-																					Completada
-																				</Button>
-																				<Button
-																					variant="outline"
-																					size="sm"
-																				>
-																					Reprogramar
-																				</Button>
-																				<Button
-																					variant="destructive"
-																					size="sm"
-																					onClick={() =>
-																						handleCancelAppointment(
-																							appointment.id
-																						)
-																					}
-																				>
-																					Cancelar
-																				</Button>
-																			</>																		)}
-																	</div>
-																)}
-																{/* Survey evaluation for completed appointments */}
-																{appointment.status === "completed" &&
-																	user.user_type === "patient" &&
-																	!surveyedAppointments.has(appointment.id) && (
-																		<div className="flex mt-3 space-x-2">
-																			<Button
-																				variant="outline"
-																				size="sm"
-																				onClick={() => {
-																					// Redirect to survey with appointment data
-																					const surveyUrl = `/survey?appointmentId=${
-																						appointment.id
-																					}&doctorName=${encodeURIComponent(
-																						appointment.doctor
-																					)}&specialty=${encodeURIComponent(
-																						appointment.specialty
-																					)}&date=${encodeURIComponent(
-																						appointment.date
-																					)}`;
-																					window.location.href = surveyUrl;
-																				}}
-																			>
-																				📝 Evaluar Atención
-																			</Button>
-																		</div>
-																	)}
-																{/* Show message if already surveyed */}
-																{appointment.status === "completed" &&
-																	user.user_type === "patient" &&
-																	surveyedAppointments.has(appointment.id) && (
-																		<div className="flex mt-3">
-																			<span className="text-sm text-green-600 font-medium">
-																				✅ Atención evaluada
-																			</span>
-																		</div>
-																	)}
-															</div>
-														</div>
-													)
-												)}
-											</div>
-										) : (
-											<div className="text-center py-6">
-												<p className="text-gray-500">
-													{user.user_type ===
-													"patient"
-														? "No tienes turnos programados"
-														: "No tienes citas programadas"}
-												</p>
-												<Button
-													className="mt-2"
-													variant="outline"
-													onClick={() =>
-														setActiveTab("schedule")
-													}
-												>
-													{user.user_type ===
-													"patient"
-														? "Agendar Turno"
-														: "Programar Cita"}
-												</Button>
-											</div>
-										)}
-									</CardContent>
-								</Card>
-								<Card>
-									<CardHeader className="pb-2">
-										<CardTitle>Calendario</CardTitle>
-										<CardDescription>
-											Vista mensual de tus citas
-										</CardDescription>
-									</CardHeader>
-									<CardContent>
-										<Calendar
-											mode="single"
-											selected={date}
-											onSelect={setDate}
-											className="rounded-md border"
-											appointmentDates={sortedAppointments.map(
-												(appointment) => {
-													const date = new Date(
-														appointment.fullDate
-													);
-													const localDate = new Date(
-														date.getTime() -
-															date.getTimezoneOffset() *
-																60000
-													);
-													return localDate
-														.toISOString()
-														.split("T")[0];
-												}
-											)}
-										/>
-									</CardContent>
-								</Card>
-							</div>
-						</TabsContent>
-						<TabsContent value="schedule">
-							{user.user_type === "patient" ? (
-								<AppointmentBookingForm
-									onAppointmentBooked={fetchAppointments}
-								/>
-							) : (
-								<Card>
-									<CardHeader>
-										<CardTitle>Gestión de Citas</CardTitle>
-										<CardDescription>
-											Como médico, puedes ver y gestionar
-											las citas de tus pacientes
-										</CardDescription>
-									</CardHeader>
-									<CardContent>
-										<div className="space-y-4">
-											<p className="text-center py-6 text-gray-500">
-												Panel de gestión de citas para
-												médicos (próximamente)
-											</p>
-										</div>
-									</CardContent>
-								</Card>
-							)}
-						</TabsContent>
-					</Tabs>
-				</main>
-			</div>
-		</div>
-	);
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="appointments">{"Mis Turnos"}</TabsTrigger>
+              {user.user_type === "patient" && (
+                <TabsTrigger value="schedule">{"Agendar Turno"}</TabsTrigger>
+              )}
+            </TabsList>
+            <TabsContent value="appointments" className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle>
+                      {user.user_type === "patient"
+                        ? "Próximos Turnos"
+                        : "Próximas Citas"}
+                    </CardTitle>
+                    <CardDescription>
+                      {user.user_type === "patient"
+                        ? "Tus citas médicas programadas"
+                        : "Citas programadas con pacientes"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <div className="text-center py-6">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
+                        <p className="text-gray-500 mt-2">Cargando...</p>
+                      </div>
+                    ) : sortedAppointments.length > 0 ? (
+                      <div className="space-y-4">
+                        {" "}
+                        {sortedAppointments.map((appointment) => (
+                          <div
+                            key={appointment.id}
+                            className="flex items-start p-3 border rounded-lg"
+                            data-testid="appointment-card"
+                          >
+                            <div className="mr-4 mt-1">
+                              <CalendarIcon className="h-10 w-10 text-teal-600" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <h3 className="font-medium">
+                                  {user.user_type === "patient"
+                                    ? `${appointment.doctor}`
+                                    : appointment.patient}
+                                </h3>
+                                <Badge
+                                  variant={
+                                    appointment.status === "scheduled"
+                                      ? "default"
+                                      : appointment.status === "completed"
+                                      ? "secondary"
+                                      : "destructive"
+                                  }
+                                >
+                                  {appointment.status === "scheduled"
+                                    ? "Programado"
+                                    : appointment.status === "completed"
+                                    ? "Completado"
+                                    : "Cancelado"}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-gray-500">
+                                {user.user_type === "patient"
+                                  ? appointment.specialty
+                                  : `Consulta${
+                                      appointment.patientAge
+                                        ? ` - ${appointment.patientAge} años`
+                                        : ""
+                                    }`}
+                              </p>
+                              <div className="flex items-center mt-2 text-sm text-gray-600">
+                                <CalendarIcon className="h-4 w-4 mr-1" />
+                                <span>{appointment.date}</span>
+                                <Clock className="h-4 w-4 ml-3 mr-1" />
+                                <span>{appointment.time}</span>
+                              </div>
+                              {appointment.status === "scheduled" && (
+                                <div className="flex mt-3 space-x-2">
+                                  {user.user_type === "patient" ? (
+                                    <>
+                                      <Button variant="outline" size="sm">
+                                        Reprogramar
+                                      </Button>
+                                      <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleCancelAppointment(
+                                            appointment.id
+                                          )
+                                        }
+                                      >
+                                        Cancelar
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Button
+                                        variant="default"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleCompleteAppointment(
+                                            appointment.id
+                                          )
+                                        }
+                                      >
+                                        Marcar Completada
+                                      </Button>
+                                      <Button variant="outline" size="sm">
+                                        Reprogramar
+                                      </Button>
+                                      <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleCancelAppointment(
+                                            appointment.id
+                                          )
+                                        }
+                                      >
+                                        Cancelar
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                              {/* Survey evaluation for completed appointments */}
+                              {appointment.status === "completed" &&
+                                user.user_type === "patient" &&
+                                !surveyedAppointments.has(appointment.id) && (
+                                  <div className="flex mt-3 space-x-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        // Redirect to survey with appointment data
+                                        const surveyUrl = `/survey?appointmentId=${
+                                          appointment.id
+                                        }&doctorName=${encodeURIComponent(
+                                          appointment.doctor
+                                        )}&specialty=${encodeURIComponent(
+                                          appointment.specialty
+                                        )}&date=${encodeURIComponent(
+                                          appointment.date
+                                        )}`;
+                                        window.location.href = surveyUrl;
+                                      }}
+                                    >
+                                      📝 Evaluar Atención
+                                    </Button>
+                                  </div>
+                                )}
+                              {/* Show message if already surveyed */}
+                              {appointment.status === "completed" &&
+                                user.user_type === "patient" &&
+                                surveyedAppointments.has(appointment.id) && (
+                                  <div className="flex mt-3">
+                                    <span className="text-sm text-green-600 font-medium">
+                                      ✅ Atención evaluada
+                                    </span>
+                                  </div>
+                                )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6">
+                        <p className="text-gray-500">
+                          {user.user_type === "patient"
+                            ? "No tienes turnos programados"
+                            : "No tienes citas programadas"}
+                        </p>
+                        {user.user_type === "patient" && (
+                          <Button
+                            className="mt-2"
+                            variant="outline"
+                            onClick={() => setActiveTab("schedule")}
+                          >
+                            Agendar Turno"
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle>Calendario</CardTitle>
+                    <CardDescription>
+                      Vista mensual de tus citas
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      className="rounded-md border"
+                      appointmentDates={sortedAppointments.map(
+                        (appointment) => {
+                          const date = new Date(appointment.fullDate);
+                          const localDate = new Date(
+                            date.getTime() - date.getTimezoneOffset() * 60000
+                          );
+                          return localDate.toISOString().split("T")[0];
+                        }
+                      )}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            <TabsContent value="schedule">
+              {user.user_type === "patient" ? (
+                <AppointmentBookingForm
+                  onAppointmentBooked={fetchAppointments}
+                />
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Gestión de Citas</CardTitle>
+                    <CardDescription>
+                      Como médico, puedes ver y gestionar las citas de tus
+                      pacientes
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <p className="text-center py-6 text-gray-500">
+                        Panel de gestión de citas para médicos (próximamente)
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </main>
+      </div>
+    </div>
+  );
 }
 
 export default function DashboardPage() {

@@ -1,19 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar } from "@/components/ui/calendar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Clock, ChevronLeft, ChevronRight, User, Plus } from "lucide-react"
-import { Sidebar } from "@/components/ui/sidebar"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Clock, ChevronLeft, ChevronRight, User, Plus } from "lucide-react";
+import { Sidebar } from "@/components/ui/sidebar";
 
 export default function CalendarPage() {
-  const [date, setDate] = useState<Date | undefined>(new Date())
-  const [view, setView] = useState("day")
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [view, setView] = useState("day");
 
   // Mock appointments data
   const appointments = [
@@ -57,26 +69,30 @@ export default function CalendarPage() {
       type: "Consulta",
       status: "confirmed",
     },
-  ]
+  ];
 
   // Generate time slots for the day view
   const timeSlots = Array.from({ length: 12 }, (_, i) => {
-    const hour = i + 8 // Start from 8 AM
-    return `${hour.toString().padStart(2, "0")}:00`
-  })
+    const hour = i + 8; // Start from 8 AM
+    return `${hour.toString().padStart(2, "0")}:00`;
+  });
 
   // Filter appointments for the current time slot
   const getAppointmentsForTimeSlot = (slot: string) => {
     return appointments.filter((app) => {
-      const appHour = Number.parseInt(app.time.split(":")[0])
-      const slotHour = Number.parseInt(slot.split(":")[0])
-      return appHour === slotHour || (appHour === slotHour - 1 && Number.parseInt(app.time.split(":")[1]) >= 30)
-    })
-  }
+      const appHour = Number.parseInt(app.time.split(":")[0]);
+      const slotHour = Number.parseInt(slot.split(":")[0]);
+      return (
+        appHour === slotHour ||
+        (appHour === slotHour - 1 &&
+          Number.parseInt(app.time.split(":")[1]) >= 30)
+      );
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
-          <Sidebar currentPage="calendar" />
+      <Sidebar currentPage="calendar" />
 
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -95,11 +111,13 @@ export default function CalendarPage() {
             >
               <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
             </svg>
-            <span className="text-xl font-bold text-teal-600">Cronos Health</span>
+            <span className="text-xl font-bold text-teal-600">
+              Cronos Health
+            </span>
           </Link>
           <div className="flex items-center space-x-4">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="/placeholder.svg?height=32&width=32" alt="Avatar" />
+              <AvatarImage src="/avatar.png" alt="Avatar" />
               <AvatarFallback>DG</AvatarFallback>
             </Avatar>
             <span className="font-medium">Dr. Gabriel Méndez</span>
@@ -116,7 +134,12 @@ export default function CalendarPage() {
                 <CardDescription>Selecciona una fecha</CardDescription>
               </CardHeader>
               <CardContent>
-                <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" />
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  className="rounded-md border"
+                />
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 rounded-full bg-teal-500"></div>
@@ -179,10 +202,15 @@ export default function CalendarPage() {
                 {view === "day" && (
                   <div className="space-y-2">
                     {timeSlots.map((slot) => {
-                      const slotAppointments = getAppointmentsForTimeSlot(slot)
+                      const slotAppointments = getAppointmentsForTimeSlot(slot);
                       return (
-                        <div key={slot} className="grid grid-cols-[80px_1fr] gap-4">
-                          <div className="text-right text-sm text-gray-500 pt-2">{slot}</div>
+                        <div
+                          key={slot}
+                          className="grid grid-cols-[80px_1fr] gap-4"
+                        >
+                          <div className="text-right text-sm text-gray-500 pt-2">
+                            {slot}
+                          </div>
                           <div className="border-l pl-4 min-h-[60px]">
                             {slotAppointments.length > 0 ? (
                               <div className="space-y-2">
@@ -206,24 +234,43 @@ export default function CalendarPage() {
                                           </AvatarFallback>
                                         </Avatar>
                                         <div>
-                                          <p className="font-medium">{app.patient}</p>
+                                          <p className="font-medium">
+                                            {app.patient}
+                                          </p>
                                           <div className="flex items-center text-xs text-gray-500">
                                             <Clock className="h-3 w-3 mr-1" />
                                             <span>
-                                              {app.time} ({app.duration} min) - {app.type}
+                                              {app.time} ({app.duration} min) -{" "}
+                                              {app.type}
                                             </span>
                                           </div>
                                         </div>
                                       </div>
-                                      <Badge variant={app.status === "confirmed" ? "default" : "outline"}>
-                                        {app.status === "confirmed" ? "Confirmado" : "Pendiente"}
+                                      <Badge
+                                        variant={
+                                          app.status === "confirmed"
+                                            ? "default"
+                                            : "outline"
+                                        }
+                                      >
+                                        {app.status === "confirmed"
+                                          ? "Confirmado"
+                                          : "Pendiente"}
                                       </Badge>
                                     </div>
                                     <div className="flex mt-2 space-x-2">
-                                      <Button variant="outline" size="sm" className="h-7 text-xs">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-xs"
+                                      >
                                         Ver Detalles
                                       </Button>
-                                      <Button variant="outline" size="sm" className="h-7 text-xs">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-xs"
+                                      >
                                         <User className="h-3 w-3 mr-1" />
                                         Historial
                                       </Button>
@@ -233,24 +280,34 @@ export default function CalendarPage() {
                               </div>
                             ) : (
                               <div className="h-full flex items-center justify-center border border-dashed rounded-md">
-                                <p className="text-sm text-gray-400">Disponible</p>
+                                <p className="text-sm text-gray-400">
+                                  Disponible
+                                </p>
                               </div>
                             )}
                           </div>
                         </div>
-                      )
+                      );
                     })}
                   </div>
                 )}
 
-                {view === "week" && <div className="text-center py-12 text-gray-500">Vista semanal en desarrollo</div>}
+                {view === "week" && (
+                  <div className="text-center py-12 text-gray-500">
+                    Vista semanal en desarrollo
+                  </div>
+                )}
 
-                {view === "month" && <div className="text-center py-12 text-gray-500">Vista mensual en desarrollo</div>}
+                {view === "month" && (
+                  <div className="text-center py-12 text-gray-500">
+                    Vista mensual en desarrollo
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
         </div>
       </main>
     </div>
-  )
+  );
 }
