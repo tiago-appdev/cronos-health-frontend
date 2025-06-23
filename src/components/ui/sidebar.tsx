@@ -190,14 +190,10 @@ export function Sidebar({ currentPage }: SidebarProps) {
             disabled={loggingOut}
           >
             {loggingOut ? (
-              <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
-                <div className="flex flex-col items-center space-y-4">
-                  <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
-                  <p className="text-lg font-medium text-gray-700">
-                    Cerrando sesión...
-                  </p>
-                </div>
-              </div>
+              <>
+                <Loader2 className="mr-3 h-5 w-5" />
+                Cerrando sesión...
+              </>
             ) : (
               <>
                 <LogOut className="mr-3 h-5 w-5" />
