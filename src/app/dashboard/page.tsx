@@ -367,9 +367,6 @@ function DashboardContent() {
                                 <div className="flex mt-3 space-x-2">
                                   {user.user_type === "patient" ? (
                                     <>
-                                      <Button variant="outline" size="sm">
-                                        Reprogramar
-                                      </Button>
                                       <Button
                                         variant="destructive"
                                         size="sm"
@@ -394,9 +391,6 @@ function DashboardContent() {
                                         }
                                       >
                                         Marcar Completada
-                                      </Button>
-                                      <Button variant="outline" size="sm">
-                                        Reprogramar
                                       </Button>
                                       <Button
                                         variant="destructive"
