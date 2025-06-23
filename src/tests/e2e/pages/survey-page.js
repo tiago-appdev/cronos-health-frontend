@@ -43,24 +43,6 @@ export class SurveyPage extends BasePage {
     if (step2RatingGroups.length > 0) {
       await step2RatingGroups[0].locator(`button[value="${surveyData.platformRating}"]`).click();
     }
-    
-    // Set recommendation
-    if (surveyData.wouldRecommend === 'yes') {
-      await this.page.click('[data-testid="recommend-yes"]');
-    } else if (surveyData.wouldRecommend === 'no') {
-      await this.page.click('[data-testid="recommend-no"]');
-    } else {
-      await this.page.click('[data-testid="recommend-maybe"]');
-    }
-
-    // Add comments if provided
-    if (surveyData.additionalComments) {
-      await this.page.fill(SELECTORS.survey.commentsTextarea, surveyData.additionalComments);
-    }
-
-    // Submit survey
-    await this.page.waitForTimeout(500); // Wait before submitting
-    await this.clickAndWait(SELECTORS.survey.submitButton);
   }
 
   async setRating(ratingType, value) {
