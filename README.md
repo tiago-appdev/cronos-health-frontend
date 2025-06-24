@@ -43,6 +43,12 @@ chmod +x start.sh
 ## 🧪 Configuracion Manual
 
 ```bash
+# Instalar las dependencias
+npm install
+
+# Levantar el backend
+https://github.com/tiago-appdev/cronos-health-backend#:~:text=Opci%C3%B3n%202%3A%20Configuraci%C3%B3n%20Manual%20con%20Docker
+
 # Iniciar el servidor de desarrollo
 npm run dev
 
