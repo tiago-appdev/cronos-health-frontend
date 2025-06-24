@@ -1,10 +1,6 @@
 # Cronos Health — Frontend
 
-Este es el frontend del sistema de gestión de turnos médicos \*\*Crono- [x] Formulario de reserva de turnos
-
-- [x] Sistema de notificaciones y recordatorios
-- [x] Encuestas y métricas de satisfacción
-- [x] Chat interno, desarrollado con **Next.js**, **TypeScript**, **TailwindCSS** y **Shadcn UI**.
+Este es el frontend del sistema de gestión de turnos médicos Cronos Health desarrollado con **Next.js**, **TypeScript**, **TailwindCSS** y **Shadcn UI**.
 
 ## 🚀 Tecnologías Utilizadas
 
@@ -15,17 +11,36 @@ Este es el frontend del sistema de gestión de turnos médicos \*\*Crono- [x] Fo
 
 ## 📦 Instalación
 
-```bash
-# Entrar a la carpeta
-cd frontend
 
-# Instalar dependencias
-npm install
+### Opción Recomendada: Configuración Automática (Full-Stack)
+
+Para una configuración completa del sistema (frontend y backend) en un solo paso, utiliza nuestro script de inicio automático:
+
+**Windows (PowerShell):**
+```powershell
+# Descargar el script de inicio
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/tiago-appdev/cronos-health-backend/main/start.ps1" -OutFile "start.ps1"
+
+# Habilitar ejecución de scripts (solo primera vez)
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+
+# Ejecutar
+.\start.ps1
+
 ```
+**Linux (Bash):**
+```bash
+# Descargar el script de inicio
+curl -o start.sh "https://raw.githubusercontent.com/tiago-appdev/cronos-health-backend/main/start.sh"
 
-> Si usás `pnpm`, también es compatible.
+# Dar permisos de ejecución
+chmod +x start.sh
 
-## 🧪 Desarrollo
+# Ejecutar
+./start.sh
+``` 
+
+## 🧪 Configuracion Manual
 
 ```bash
 # Iniciar el servidor de desarrollo
@@ -109,4 +124,4 @@ NEXT_PUBLIC_API_URL=http://localhost:4000/api
 
 ## 👥 Equipo
 
-- Desarrolladores: Amarfil Carolina, Ibarrola Tiago, Ozuna Maria, Pereyra Maximiliano y Skidelski Dario.
+- Desarrolladores: Amarfil Carolina, Ibarrola Tiago, Ozuna Maria, Pereyra Maximiliano y Skidelsky Dario.
